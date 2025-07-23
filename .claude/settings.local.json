@@ -22,7 +22,11 @@
       "Bash(git commit:*)",
       "Bash(mv:*)",
       "Bash(bunx tsc:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "mcp__hostinger-api__VPS_getActionListV1",
+      "mcp__hostinger-api__VPS_getBackupListV1",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

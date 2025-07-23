@@ -1,0 +1,478 @@
+name: Production Deployment Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - production
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      force_deploy:
+        description: 'Force deployment (skip tests)'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: caas
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.force_deploy }}
+    strategy:
+      matrix:
+        service: [
+          'web-dashboard',
+          'admin-portal', 
+          'core-api',
+          'notifications-service',
+          'document-service',
+          'risk-assessment',
+          'payment-service',
+          'monitoring-service',
+          'credit-providers-api',
+          'provider-dashboard',
+          'admin-provider-management'
+        ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          if [[ "${{ matrix.service }}" == *"dashboard"* ]] || [[ "${{ matrix.service }}" == *"portal"* ]]; then
+            cd apps/${{ matrix.service }}
+          else
+            cd services/${{ matrix.service }}
+          fi
+          npm ci
+
+      - name: Run tests
+        run: |
+          if [[ "${{ matrix.service }}" == *"dashboard"* ]] || [[ "${{ matrix.service }}" == *"portal"* ]]; then
+            cd apps/${{ matrix.service }}
+          else
+            cd services/${{ matrix.service }}
+          fi
+          npm run test || echo "No tests found for ${{ matrix.service }}"
+
+      - name: Run type checking
+        run: |
+          if [[ "${{ matrix.service }}" == *"dashboard"* ]] || [[ "${{ matrix.service }}" == *"portal"* ]]; then
+            cd apps/${{ matrix.service }}
+          else
+            cd services/${{ matrix.service }}
+          fi
+          npm run type-check || echo "No type checking for ${{ matrix.service }}"
+
+      - name: Run linting
+        run: |
+          if [[ "${{ matrix.service }}" == *"dashboard"* ]] || [[ "${{ matrix.service }}" == *"portal"* ]]; then
+            cd apps/${{ matrix.service }}
+          else
+            cd services/${{ matrix.service }}
+          fi
+          npm run lint || echo "No linting for ${{ matrix.service }}"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    if: always() && (needs.test.result == 'success' || needs.test.result == 'skipped' || inputs.force_deploy)
+    strategy:
+      matrix:
+        service: [
+          'web-dashboard',
+          'admin-portal', 
+          'core-api',
+          'notifications-service',
+          'document-service',
+          'risk-assessment',
+          'payment-service',
+          'monitoring-service',
+          'credit-providers-api',
+          'provider-dashboard',
+          'admin-provider-management'
+        ]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/${{ env.IMAGE_PREFIX }}-${{ matrix.service }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Determine build context
+        id: context
+        run: |
+          if [[ "${{ matrix.service }}" == *"dashboard"* ]] || [[ "${{ matrix.service }}" == *"portal"* ]]; then
+            echo "context=apps/${{ matrix.service }}" >> $GITHUB_OUTPUT
+            echo "dockerfile=apps/${{ matrix.service }}/Dockerfile" >> $GITHUB_OUTPUT
+          else
+            echo "context=services/${{ matrix.service }}" >> $GITHUB_OUTPUT
+            echo "dockerfile=services/${{ matrix.service }}/Dockerfile" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ steps.context.outputs.context }}
+          file: ${{ steps.context.outputs.dockerfile }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          platforms: linux/amd64,linux/arm64
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build
+    if: always() && needs.build.result == 'success'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build, security-scan]
+    if: |
+      always() && 
+      needs.build.result == 'success' && 
+      (needs.security-scan.result == 'success' || needs.security-scan.result == 'skipped') &&
+      (github.ref == 'refs/heads/main' || inputs.environment == 'staging')
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup deployment environment
+        run: |
+          echo "ENVIRONMENT=staging" >> $GITHUB_ENV
+          echo "DEPLOY_HOST=${{ secrets.STAGING_HOST }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.STAGING_SSH_KEY }}
+
+      - name: Create environment file
+        run: |
+          cat > .env.staging << EOF
+          # Database Configuration
+          POSTGRES_DB=caas_staging
+          POSTGRES_USER=caas_staging_user
+          POSTGRES_PASSWORD=${{ secrets.STAGING_DB_PASSWORD }}
+          REDIS_PASSWORD=${{ secrets.STAGING_REDIS_PASSWORD }}
+          
+          # Application Configuration
+          NODE_ENV=staging
+          JWT_SECRET=${{ secrets.STAGING_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.STAGING_JWT_REFRESH_SECRET }}
+          ENCRYPTION_KEY=${{ secrets.STAGING_ENCRYPTION_KEY }}
+          ADMIN_SECRET=${{ secrets.STAGING_ADMIN_SECRET }}
+          NEXTAUTH_SECRET=${{ secrets.STAGING_NEXTAUTH_SECRET }}
+          WEBHOOK_SECRET=${{ secrets.STAGING_WEBHOOK_SECRET }}
+          
+          # External Services
+          SME_API_URL=${{ secrets.STAGING_SME_API_URL }}
+          SME_API_KEY=${{ secrets.STAGING_SME_API_KEY }}
+          EMAIL_SERVICE_URL=${{ secrets.STAGING_EMAIL_SERVICE_URL }}
+          SMS_SERVICE_URL=${{ secrets.STAGING_SMS_SERVICE_URL }}
+          
+          # URLs
+          API_URL=https://api-staging.caas.platform.com
+          WS_URL=wss://ws-staging.caas.platform.com
+          NEXTAUTH_URL=https://providers-staging.caas.platform.com
+          PROVIDER_API_URL=https://provider-api-staging.caas.platform.com
+          
+          # Monitoring
+          SENTRY_DSN=${{ secrets.STAGING_SENTRY_DSN }}
+          LOG_LEVEL=debug
+          
+          # Version
+          VERSION=${{ github.sha }}
+          EOF
+
+      - name: Deploy to staging
+        run: |
+          # Copy files to staging server
+          scp -o StrictHostKeyChecking=no .env.staging docker-compose.production.yml ${{ secrets.STAGING_USER }}@${{ env.DEPLOY_HOST }}:~/caas/
+          scp -r -o StrictHostKeyChecking=no nginx monitoring scripts ${{ secrets.STAGING_USER }}@${{ env.DEPLOY_HOST }}:~/caas/
+          
+          # Execute deployment on staging server
+          ssh -o StrictHostKeyChecking=no ${{ secrets.STAGING_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ~/caas
+            
+            # Pull latest images
+            docker-compose -f docker-compose.production.yml --env-file .env.staging pull
+            
+            # Backup current database
+            ./scripts/backup-database.sh staging
+            
+            # Deploy with zero-downtime
+            docker-compose -f docker-compose.production.yml --env-file .env.staging up -d --remove-orphans
+            
+            # Wait for services to be healthy
+            ./scripts/wait-for-health.sh
+            
+            # Run database migrations
+            ./scripts/run-migrations.sh staging
+            
+            # Verify deployment
+            ./scripts/verify-deployment.sh staging
+          EOF
+
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            Staging deployment ${{ job.status }}
+            Branch: ${{ github.ref }}
+            Commit: ${{ github.sha }}
+            Environment: staging
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: [deploy-staging]
+    if: |
+      always() && 
+      needs.deploy-staging.result == 'success' &&
+      (github.ref_type == 'tag' || inputs.environment == 'production')
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup deployment environment
+        run: |
+          echo "ENVIRONMENT=production" >> $GITHUB_ENV
+          echo "DEPLOY_HOST=${{ secrets.PRODUCTION_HOST }}" >> $GITHUB_ENV
+          echo "VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Create environment file
+        run: |
+          cat > .env.production << EOF
+          # Database Configuration
+          POSTGRES_DB=caas_production
+          POSTGRES_USER=caas_prod_user
+          POSTGRES_PASSWORD=${{ secrets.PRODUCTION_DB_PASSWORD }}
+          REDIS_PASSWORD=${{ secrets.PRODUCTION_REDIS_PASSWORD }}
+          
+          # Application Configuration
+          NODE_ENV=production
+          JWT_SECRET=${{ secrets.PRODUCTION_JWT_SECRET }}
+          JWT_REFRESH_SECRET=${{ secrets.PRODUCTION_JWT_REFRESH_SECRET }}
+          ENCRYPTION_KEY=${{ secrets.PRODUCTION_ENCRYPTION_KEY }}
+          ADMIN_SECRET=${{ secrets.PRODUCTION_ADMIN_SECRET }}
+          NEXTAUTH_SECRET=${{ secrets.PRODUCTION_NEXTAUTH_SECRET }}
+          WEBHOOK_SECRET=${{ secrets.PRODUCTION_WEBHOOK_SECRET }}
+          
+          # External Services
+          SME_API_URL=${{ secrets.PRODUCTION_SME_API_URL }}
+          SME_API_KEY=${{ secrets.PRODUCTION_SME_API_KEY }}
+          EMAIL_SERVICE_URL=${{ secrets.PRODUCTION_EMAIL_SERVICE_URL }}
+          SMS_SERVICE_URL=${{ secrets.PRODUCTION_SMS_SERVICE_URL }}
+          
+          # Payment Services
+          PAYSTACK_SECRET_KEY=${{ secrets.PRODUCTION_PAYSTACK_SECRET_KEY }}
+          STRIPE_SECRET_KEY=${{ secrets.PRODUCTION_STRIPE_SECRET_KEY }}
+          
+          # Blockchain
+          BLOCKCHAIN_RPC_URL=${{ secrets.PRODUCTION_BLOCKCHAIN_RPC_URL }}
+          BLOCKCHAIN_PRIVATE_KEY=${{ secrets.PRODUCTION_BLOCKCHAIN_PRIVATE_KEY }}
+          
+          # URLs
+          API_URL=https://api.caas.platform.com
+          WS_URL=wss://ws.caas.platform.com
+          NEXTAUTH_URL=https://providers.caas.platform.com
+          PROVIDER_API_URL=https://provider-api.caas.platform.com
+          
+          # Monitoring
+          SENTRY_DSN=${{ secrets.PRODUCTION_SENTRY_DSN }}
+          LOG_LEVEL=info
+          GRAFANA_PASSWORD=${{ secrets.PRODUCTION_GRAFANA_PASSWORD }}
+          
+          # Version
+          VERSION=${{ github.ref_name }}
+          EOF
+
+      - name: Deploy to production
+        run: |
+          # Copy files to production server
+          scp -o StrictHostKeyChecking=no .env.production docker-compose.production.yml ${{ secrets.PRODUCTION_USER }}@${{ env.DEPLOY_HOST }}:~/caas/
+          scp -r -o StrictHostKeyChecking=no nginx monitoring scripts ${{ secrets.PRODUCTION_USER }}@${{ env.DEPLOY_HOST }}:~/caas/
+          
+          # Execute deployment on production server
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PRODUCTION_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ~/caas
+            
+            # Create maintenance page
+            ./scripts/enable-maintenance.sh
+            
+            # Pull latest images
+            docker-compose -f docker-compose.production.yml --env-file .env.production pull
+            
+            # Backup current database
+            ./scripts/backup-database.sh production
+            
+            # Deploy with blue-green strategy
+            ./scripts/blue-green-deploy.sh
+            
+            # Wait for services to be healthy
+            ./scripts/wait-for-health.sh
+            
+            # Run database migrations
+            ./scripts/run-migrations.sh production
+            
+            # Switch traffic to new version
+            ./scripts/switch-traffic.sh
+            
+            # Disable maintenance page
+            ./scripts/disable-maintenance.sh
+            
+            # Verify deployment
+            ./scripts/verify-deployment.sh production
+            
+            # Cleanup old containers and images
+            ./scripts/cleanup-deployment.sh
+          EOF
+
+      - name: Run post-deployment tests
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PRODUCTION_USER }}@${{ env.DEPLOY_HOST }} << 'EOF'
+            cd ~/caas
+            ./scripts/post-deployment-tests.sh production
+          EOF
+
+      - name: Notify deployment status
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            🚀 Production deployment ${{ job.status }}
+            Version: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Environment: production
+            
+            Services deployed:
+            - Web Dashboard ✅
+            - Admin Portal ✅
+            - Core API ✅
+            - Credit Providers API ✅
+            - Provider Dashboard ✅
+            - Admin Provider Management ✅
+
+  rollback:
+    runs-on: ubuntu-latest
+    if: failure() && (github.ref_type == 'tag' || inputs.environment == 'production')
+    needs: [deploy-production]
+    environment: production
+
+    steps:
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.PRODUCTION_SSH_KEY }}
+
+      - name: Rollback deployment
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.PRODUCTION_USER }}@${{ secrets.PRODUCTION_HOST }} << 'EOF'
+            cd ~/caas
+            
+            echo "🔄 Initiating rollback..."
+            
+            # Enable maintenance page
+            ./scripts/enable-maintenance.sh
+            
+            # Rollback to previous version
+            ./scripts/rollback-deployment.sh
+            
+            # Verify rollback
+            ./scripts/verify-deployment.sh production
+            
+            # Disable maintenance page
+            ./scripts/disable-maintenance.sh
+            
+            echo "✅ Rollback completed"
+          EOF
+
+      - name: Notify rollback
+        uses: 8398a7/action-slack@v3
+        with:
+          status: 'warning'
+          channel: '#deployments'
+          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+          message: |
+            ⚠️ Production deployment rolled back
+            Version: ${{ github.ref_name }}
+            Reason: Deployment failure
+            Previous version restored

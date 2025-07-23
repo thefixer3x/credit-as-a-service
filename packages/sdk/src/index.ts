@@ -102,6 +102,10 @@ export class CaasSDK extends EventEmitter<SdkEvents> {
     return new CaasSDK({
       apiKey,
       environment,
+      timeout: 10000, // 10 seconds
+      retryAttempts: 3,
+      retryDelay: 1000, // 1 second
+      rateLimitPerHour: 1000
     });
   }
 }

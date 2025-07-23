@@ -1,0 +1,61 @@
+{
+  "name": "@caas/monitoring-service",
+  "version": "1.0.0",
+  "description": "Monitoring and observability service for Credit-as-a-Service Platform",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@caas/common": "workspace:*",
+    "fastify": "^4.24.0",
+    "pino": "^8.16.0",
+    "pino-http": "^8.5.0",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "compression": "^1.7.4",
+    "express": "^4.18.0",
+    "prometheus-client": "^15.0.0",
+    "node-cron": "^3.0.2",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/express": "^4.17.21",
+    "@types/cors": "^2.8.17",
+    "@types/compression": "^1.7.5",
+    "@types/ws": "^8.5.8",
+    "typescript": "^5.2.2",
+    "tsx": "^4.0.0",
+    "rollup": "^4.0.0",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-commonjs": "^25.0.5",
+    "vitest": "^0.34.6",
+    "eslint": "^8.51.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "@rollup/plugin-terser": "^0.4.4"
+  },
+  "keywords": [
+    "monitoring",
+    "observability",
+    "metrics",
+    "logging",
+    "tracing",
+    "prometheus",
+    "credit-as-a-service"
+  ],
+  "author": "Credit-as-a-Service Platform",
+  "license": "MIT"
+}

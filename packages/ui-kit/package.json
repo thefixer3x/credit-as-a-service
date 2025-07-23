@@ -60,7 +60,9 @@
     "@testing-library/jest-dom": "^6.1.4",
     "eslint": "^8.51.0",
     "@typescript-eslint/eslint-plugin": "^6.7.4",
-    "@typescript-eslint/parser": "^6.7.4"
+    "@typescript-eslint/parser": "^6.7.4",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/minimatch": "^5.1.2"
   },
   "peerDependencies": {
     "react": ">=16.8.0",

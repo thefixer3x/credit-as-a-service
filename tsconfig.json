@@ -22,15 +22,13 @@
     "baseUrl": ".",
     "paths": {
       "@caas/contracts": ["./packages/contracts/src"],
-      "@caas/shared": ["./packages/shared/src"],
-      "@caas/ui": ["./packages/ui/src"],
-      "@caas/ui-kit": ["./packages/ui-kit/src"],
-      "@caas/common": ["./packages/common/src"],
-      "@caas/sdk": ["./packages/sdk/src"],
-      "@caas/config": ["./packages/config/src"],
-      "@caas/types": ["./packages/types/src"]
+      "@caas/ui-kit": ["./packages/ui-kit/dist"],
+      "@caas/common": ["./packages/common/dist"],
+      "@caas/sdk": ["./packages/sdk/dist"],
+      "@caas/config": ["./packages/config/dist"],
+      "@caas/types": ["./packages/types/dist"]
     },
-    "types": ["bun-types"]
+    "types": ["bun-types", "minimatch"]
   },
   "include": [
     "**/*.ts",

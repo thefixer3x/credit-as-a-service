@@ -10,11 +10,86 @@ export type { CacheEntry, CacheStats } from './cache-service.js';
 export { SessionService } from './session-service.js';
 export type { SessionData, SessionConfig } from './session-service.js';
 
+// Credit cache service exports
+export { CreditCacheService } from './credit-cache-service.js';
+export type { 
+  CreditScore,
+  CreditApplication,
+  CreditLimit
+} from './credit-cache-service.js';
+
+// Rate limiting service exports
+export { RateLimitingService } from './rate-limiting-service.js';
+export type { 
+  RateLimitRule,
+  RateLimitResult,
+  RateLimitConfig
+} from './rate-limiting-service.js';
+
+// API cache service exports
+export { ApiCacheService } from './api-cache-service.js';
+export type { 
+  ApiCacheConfig,
+  CachedResponse,
+  CacheRule
+} from './api-cache-service.js';
+
+// Cache monitoring service exports
+export { CacheMonitoringService } from './cache-monitoring-service.js';
+export type { 
+  CacheMetrics,
+  CacheHealthStatus,
+  AlertRule,
+  Alert
+} from './cache-monitoring-service.js';
+
+// Cache invalidation service exports
+export { CacheInvalidationService } from './cache-invalidation-service.js';
+export type { 
+  InvalidationEvent,
+  InvalidationRule,
+  InvalidationStats
+} from './cache-invalidation-service.js';
+
+// Cache middleware exports
+export {
+  apiCacheMiddleware,
+  rateLimitMiddleware,
+  sessionMiddleware,
+  cacheHeadersMiddleware,
+  cacheInvalidationMiddleware,
+  createCacheMiddleware,
+  CacheAwareRequest
+} from './cache-middleware.js';
+export type { CacheMiddlewareConfig } from './cache-middleware.js';
+
+// Configuration exports
+export {
+  loadCacheConfig,
+  validateCacheConfig,
+  getServiceConfigs,
+  initializeCacheConfig
+} from './config/cache-config.js';
+export type {
+  EnvironmentConfig,
+  CacheConfigServices
+} from './config/cache-config.js';
+
 // Convenience factory functions
 import { createRedisClient } from './redis-client.js';
 import { CacheService } from './cache-service.js';
 import { SessionService } from './session-service.js';
-import type { CacheConfig, SessionConfig } from './redis-client.js';
+import { CreditCacheService } from './credit-cache-service.js';
+import { RateLimitingService } from './rate-limiting-service.js';
+import { ApiCacheService } from './api-cache-service.js';
+import { CacheMonitoringService } from './cache-monitoring-service.js';
+import { CacheInvalidationService } from './cache-invalidation-service.js';
+import type { 
+  CacheConfig, 
+  SessionConfig
+} from './redis-client.js';
+import type { RateLimitConfig } from './rate-limiting-service.js';
+import type { ApiCacheConfig } from './api-cache-service.js';
 
 /**
  * Initialize complete cache infrastructure
@@ -22,22 +97,72 @@ import type { CacheConfig, SessionConfig } from './redis-client.js';
 export async function initializeCache(config?: {
   redis?: Partial<CacheConfig>;
   session?: Partial<SessionConfig>;
+  rateLimit?: Partial<RateLimitConfig>;
+  apiCache?: Partial<ApiCacheConfig>;
+  enableMonitoring?: boolean;
+  enableInvalidation?: boolean;
 }) {
   // Create Redis client
   const redisClient = createRedisClient(config?.redis);
   await redisClient.connect();
 
-  // Create cache service
+  // Create core cache service
   const cacheService = new CacheService(redisClient);
 
   // Create session service
   const sessionService = new SessionService(cacheService, config?.session);
 
+  // Create specialized cache services
+  const creditCacheService = new CreditCacheService(cacheService);
+  const rateLimitingService = new RateLimitingService(cacheService, config?.rateLimit);
+  const apiCacheService = new ApiCacheService(cacheService, config?.apiCache);
+
+  // Optional monitoring service
+  let monitoringService: CacheMonitoringService | undefined;
+  if (config?.enableMonitoring !== false) {
+    monitoringService = new CacheMonitoringService(cacheService, redisClient);
+  }
+
+  // Optional invalidation service
+  let invalidationService: CacheInvalidationService | undefined;
+  if (config?.enableInvalidation !== false) {
+    invalidationService = new CacheInvalidationService(cacheService, redisClient);
+  }
+
   return {
     redisClient,
     cacheService,
-    sessionService
+    sessionService,
+    creditCacheService,
+    rateLimitingService,
+    apiCacheService,
+    monitoringService,
+    invalidationService
   };
+}
+
+/**
+ * Initialize cache with production-ready configuration
+ */
+export async function initializeProdCache(config?: {
+  redis?: Partial<CacheConfig>;
+  session?: Partial<SessionConfig>;
+}) {
+  return initializeCache({
+    ...config,
+    enableMonitoring: true,
+    enableInvalidation: true,
+    rateLimit: {
+      enableBlocking: true,
+      defaultWindowSize: 60,
+      defaultMaxRequests: 1000
+    },
+    apiCache: {
+      defaultTTL: 300,
+      enableCompression: true,
+      maxCacheSize: 1024 * 1024 // 1MB
+    }
+  });
 }
 
 /**
@@ -51,7 +176,7 @@ export function Cache(keyPrefix: string, ttlSeconds?: number) {
       const cacheKey = `${keyPrefix}:${JSON.stringify(args)}`;
       
       // Try to get from cache first
-      const cacheService = this.cacheService || global.cacheService;
+      const cacheService = (this as any).cacheService || (global as any).cacheService;
       if (cacheService) {
         const cached = await cacheService.get(cacheKey);
         if (cached !== null) {
@@ -84,7 +209,7 @@ export function CacheInvalidate(keyPattern: string) {
       const result = await method.apply(this, args);
 
       // Invalidate cache
-      const cacheService = this.cacheService || global.cacheService;
+      const cacheService = (this as any).cacheService || (global as any).cacheService;
       if (cacheService) {
         // Note: This is a simplified implementation
         // Production would need Redis SCAN with pattern matching

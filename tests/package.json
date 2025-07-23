@@ -1,0 +1,51 @@
+{
+  "name": "@caas/tests",
+  "version": "1.0.0",
+  "description": "Comprehensive testing suite for Credit-as-a-Service Platform",
+  "type": "module",
+  "scripts": {
+    "test": "vitest",
+    "test:unit": "vitest run unit/",
+    "test:integration": "vitest run integration/",
+    "test:e2e": "playwright test",
+    "test:coverage": "vitest run --coverage",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui",
+    "db:test-setup": "bun run setup-test-db.ts",
+    "db:test-teardown": "bun run teardown-test-db.ts",
+    "mock:server": "bun run mock-server.ts"
+  },
+  "dependencies": {
+    "vitest": "^1.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "playwright": "^1.40.0",
+    "@playwright/test": "^1.40.0",
+    "supertest": "^6.3.3",
+    "msw": "^2.0.0",
+    "nock": "^13.4.0",
+    "testcontainers": "^10.2.0",
+    "ws": "^8.14.0",
+    "fastify": "^4.24.0",
+    "@fastify/websocket": "^8.3.1",
+    "drizzle-orm": "^0.29.0",
+    "postgres": "^3.4.0",
+    "redis": "^4.6.0",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "uuid": "^9.0.1",
+    "zod": "^3.22.0",
+    "pino": "^8.16.0",
+    "sinon": "^17.0.0",
+    "@types/supertest": "^2.0.16",
+    "@types/ws": "^8.5.9",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/uuid": "^9.0.7",
+    "@types/sinon": "^17.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.2.0"
+  }
+}

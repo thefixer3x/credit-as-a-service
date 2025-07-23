@@ -1,11 +1,13 @@
-require("@nomicfoundation/hardhat-toolbox");
-require("@openzeppelin/hardhat-upgrades");
-require("hardhat-gas-reporter");
-require("solidity-coverage");
-require("dotenv").config();
+import "@nomicfoundation/hardhat-toolbox";
+import "@openzeppelin/hardhat-upgrades";
+import "hardhat-gas-reporter";
+import "solidity-coverage";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
-module.exports = {
+export default {
   solidity: {
     version: "0.8.19",
     settings: {
