@@ -1,0 +1,58 @@
+{
+  "name": "@caas/monorepo",
+  "version": "1.0.0",
+  "description": "Credit-as-a-Service Platform - Production Monorepo",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*",
+    "libs/*"
+  ],
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "contracts:compile": "bun run --cwd packages/contracts compile",
+    "contracts:test": "bun run --cwd packages/contracts test",
+    "contracts:deploy:local": "bun run --cwd packages/contracts deploy:local",
+    "contracts:deploy:testnet": "bun run --cwd packages/contracts deploy:testnet",
+    "db:migrate": "bun run --cwd services/database migrate",
+    "db:seed": "bun run --cwd services/database seed",
+    "setup": "bun install && bun run build",
+    "start": "turbo run start --parallel"
+  },
+  "keywords": [
+    "defi",
+    "credit",
+    "lending",
+    "smart-contracts",
+    "microservices",
+    "caas",
+    "monorepo"
+  ],
+  "author": "Credit-as-a-Service Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-import": "^2.29.0",
+    "prettier": "^3.0.0",
+    "turbo": "^1.10.0",
+    "typescript": "^5.2.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=20.0.0"
+  },
+  "packageManager": "bun@1.0.0"
+}

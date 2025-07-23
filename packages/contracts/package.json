@@ -1,0 +1,56 @@
+{
+  "name": "@caas/contracts",
+  "version": "1.0.0",
+  "description": "Smart Contracts for Credit-as-a-Service Platform",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "compile": "hardhat compile",
+    "test": "hardhat test",
+    "deploy:local": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network goerli",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
+    "verify": "hardhat verify",
+    "node": "hardhat node",
+    "clean": "hardhat clean",
+    "coverage": "hardhat coverage",
+    "lint": "solhint 'contracts/**/*.sol'",
+    "lint:fix": "solhint 'contracts/**/*.sol' --fix",
+    "format": "prettier --write 'contracts/**/*.sol'",
+    "typecheck": "echo 'No TypeScript files to check in contracts'",
+    "build": "bun run compile && bun run generate-types",
+    "generate-types": "typechain --target ethers-v6 --out-dir ./typechain-types './artifacts/contracts/**/*.sol/*.json'"
+  },
+  "keywords": [
+    "defi",
+    "credit",
+    "lending",
+    "smart-contracts",
+    "ethereum",
+    "solidity"
+  ],
+  "author": "Credit-as-a-Service Team",
+  "license": "MIT",
+  "dependencies": {
+    "@chainlink/contracts": "^0.8.0",
+    "@uniswap/v3-periphery": "^1.4.3",
+    "@uniswap/v3-core": "^1.0.1",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
+    "@openzeppelin/contracts": "^5.0.0",
+    "@openzeppelin/hardhat-upgrades": "^2.4.1",
+    "@typechain/ethers-v6": "^0.5.0",
+    "@typechain/hardhat": "^9.1.0",
+    "hardhat": "^2.19.0",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solidity-coverage": "^0.8.4",
+    "solhint": "^4.0.0",
+    "prettier": "^3.0.0",
+    "prettier-plugin-solidity": "^1.2.0",
+    "typechain": "^8.3.0",
+    "typescript": "^5.2.0",
+    "ethers": "^6.8.0"
+  }
+}
