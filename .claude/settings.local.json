@@ -17,7 +17,8 @@
       "Bash(find:*)",
       "Bash(ls:*)",
       "mcp___21st-dev_magic__21st_magic_component_inspiration",
-      "Bash(gh repo view:*)"
+      "Bash(gh repo view:*)",
+      "mcp___21st-dev_magic__21st_magic_component_builder"
     ],
     "deny": []
   }
