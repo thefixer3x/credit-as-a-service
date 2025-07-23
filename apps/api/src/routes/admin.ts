@@ -96,7 +96,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
       // Get recent activity (last 10 items)
       const recentLoans = await db.select({
         id: loanApplications.id,
-        amount: loanApplications.amount,
+        amount: loanApplications.requestedAmount,
         status: loanApplications.status,
         createdAt: loanApplications.createdAt,
       }).from(loanApplications)
@@ -116,13 +116,13 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
       const recentActivity = [
         ...recentLoans.map(loan => ({
           type: 'loan',
-          description: `Loan application for $${loan.amount.toLocaleString()} - ${loan.status}`,
-          timestamp: loan.createdAt.toISOString()
+          description: `Loan application for $${loan.amount?.toLocaleString() || '0'} - ${loan.status}`,
+          timestamp: loan.createdAt?.toISOString() || new Date().toISOString()
         })),
         ...recentPayments.map(payment => ({
           type: 'payment',
-          description: `Payment of $${payment.amount.toLocaleString()} - ${payment.status}`,
-          timestamp: payment.createdAt.toISOString()
+          description: `Payment of $${payment.amount?.toLocaleString() || '0'} - ${payment.status}`,
+          timestamp: payment.createdAt?.toISOString() || new Date().toISOString()
         }))
       ].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10);
@@ -151,7 +151,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get admin dashboard metrics', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -201,7 +201,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
         keyPrefix: apiKeys.keyPrefix,
         permissions: apiKeys.permissions,
         isActive: apiKeys.isActive,
-        lastUsed: apiKeys.lastUsed,
+        lastUsed: apiKeys.lastUsedAt,
         expiresAt: apiKeys.expiresAt,
         createdAt: apiKeys.createdAt,
       }).from(apiKeys)
@@ -211,7 +211,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get API keys', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -307,7 +307,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('API key creation failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         name,
         requestId: request.id,
       });
@@ -406,7 +406,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('API key update failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         keyId,
         requestId: request.id,
       });
@@ -474,7 +474,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('API key deletion failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         keyId,
         requestId: request.id,
       });
@@ -535,7 +535,7 @@ export const adminRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Health check failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 

@@ -114,7 +114,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
       const tokenPayload = {
         userId: newUser.id,
         email: newUser.email,
-        role: newUser.role,
+        role: newUser.role || 'user',
         sessionId,
       };
 

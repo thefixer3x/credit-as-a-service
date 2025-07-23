@@ -18,7 +18,11 @@
       "Bash(ls:*)",
       "mcp___21st-dev_magic__21st_magic_component_inspiration",
       "Bash(gh repo view:*)",
-      "mcp___21st-dev_magic__21st_magic_component_builder"
+      "mcp___21st-dev_magic__21st_magic_component_builder",
+      "Bash(git commit:*)",
+      "Bash(mv:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }

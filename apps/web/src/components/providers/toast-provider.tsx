@@ -1,12 +1,11 @@
-'use client';
+'use client'
 
-import { Toaster } from '@/components/ui/toaster';
+import { ToastProvider } from '@caas/ui-kit'
 
-export function ToastProvider({ children }: { children: React.ReactNode }) {
+export function AppToastProvider({ children }: { children: React.ReactNode }) {
   return (
-    <>
+    <ToastProvider>
       {children}
-      <Toaster />
-    </>
-  );
+    </ToastProvider>
+  )
 }

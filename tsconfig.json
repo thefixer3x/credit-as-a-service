@@ -24,6 +24,8 @@
       "@caas/contracts": ["./packages/contracts/src"],
       "@caas/shared": ["./packages/shared/src"],
       "@caas/ui": ["./packages/ui/src"],
+      "@caas/ui-kit": ["./packages/ui-kit/src"],
+      "@caas/common": ["./packages/common/src"],
       "@caas/sdk": ["./packages/sdk/src"],
       "@caas/config": ["./packages/config/src"],
       "@caas/types": ["./packages/types/src"]
