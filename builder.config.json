@@ -1,0 +1,6 @@
+{
+  "command": "bun run dev",
+  "serverUrl": "http://localhost:9001",
+  "authenticateProxy": false,
+  "commitMode": "commits"
+}

@@ -26,7 +26,11 @@
       "Bash(npm run build:*)",
       "mcp__hostinger-api__VPS_getActionListV1",
       "mcp__hostinger-api__VPS_getBackupListV1",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "mcp__hostinger-api__DNS_getRecordsV1",
+      "mcp__hostinger-api__DNS_updateZoneRecordsV1",
+      "Bash(curl:*)",
+      "Bash(ssh:*)"
     ],
     "deny": []
   }

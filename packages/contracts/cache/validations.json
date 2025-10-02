@@ -1,0 +1,52 @@
+{
+  "version": "3.4",
+  "log": [
+    {
+      "contracts/Greeter.sol:Greeter": {
+        "src": "contracts/Greeter.sol:4",
+        "version": {
+          "withMetadata": "f90fb3d0e4a5407905d9968830cbbbe0ef977006bc9ab2cc3d4b4314464a0e77",
+          "withoutMetadata": "2df4dd85bf190be688d3eb13c23ed3fd5b067357f20479d5b3629d015e2d9796",
+          "linkedWithoutMetadata": "2df4dd85bf190be688d3eb13c23ed3fd5b067357f20479d5b3629d015e2d9796"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "(string)",
+          "greet()",
+          "setGreeting(string)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "Greeter",
+            "src": "contracts/Greeter.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "greeting",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_string_storage",
+              "contract": "Greeter",
+              "src": "contracts/Greeter.sol:5"
+            }
+          ],
+          "types": {
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.19"
+      }
+    }
+  ]
+}
