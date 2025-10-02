@@ -18,7 +18,7 @@
     "@caas/types": "workspace:*",
     "@caas/database": "workspace:*",
     "fastify": "^4.24.0",
-    "@fastify/cors": "^8.4.0",
+    "@fastify/cors": "^11.1.0",
     "@fastify/helmet": "^11.1.0",
     "@fastify/rate-limit": "^9.0.0",
     "@fastify/http-proxy": "^9.2.0",

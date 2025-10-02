@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn, formatCurrency } from '../../lib/utils.js';
+import { cn, formatCurrency } from '../../lib/utils';
 import { ArrowUpRight, Users, CreditCard, DollarSign, TrendingUp } from 'lucide-react';
 
 interface CardProps extends React.ComponentProps<'div'> {}

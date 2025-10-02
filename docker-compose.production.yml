@@ -41,6 +41,53 @@ services:
       timeout: 10s
       retries: 5
 
+  # Apache Kafka for Event Streaming
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: caas_zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    networks:
+      - caas_network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: caas_kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - caas_network
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
   # Core Application Services
   caas-web:
     image: caas/web-dashboard:${VERSION:-latest}
@@ -357,6 +404,174 @@ services:
       timeout: 10s
       retries: 3
 
+  # New Microservices (Phase 2A Implementation)
+  caas-risk-service:
+    image: caas/risk-service:${VERSION:-latest}
+    container_name: caas_risk_service
+    restart: unless-stopped
+    ports:
+      - "3015:3015"
+    environment:
+      - NODE_ENV=production
+      - RISK_SERVICE_PORT=3015
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-caas_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-caas_platform}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - KAFKA_BROKER=kafka:29092
+      - ML_MODEL_URL=${ML_MODEL_URL}
+      - CREDIT_BUREAU_API_URL=${CREDIT_BUREAU_API_URL}
+      - CREDIT_BUREAU_API_KEY=${CREDIT_BUREAU_API_KEY}
+    networks:
+      - caas_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3015/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  caas-compliance-service:
+    image: caas/compliance-service:${VERSION:-latest}
+    container_name: caas_compliance_service
+    restart: unless-stopped
+    ports:
+      - "3016:3016"
+    environment:
+      - NODE_ENV=production
+      - COMPLIANCE_SERVICE_PORT=3016
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-caas_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-caas_platform}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - KAFKA_BROKER=kafka:29092
+      - KYC_PROVIDER_URL=${KYC_PROVIDER_URL}
+      - KYC_PROVIDER_KEY=${KYC_PROVIDER_KEY}
+      - AML_PROVIDER_URL=${AML_PROVIDER_URL}
+      - AML_PROVIDER_KEY=${AML_PROVIDER_KEY}
+    networks:
+      - caas_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3016/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  caas-provider-service:
+    image: caas/provider-service:${VERSION:-latest}
+    container_name: caas_provider_service
+    restart: unless-stopped
+    ports:
+      - "3017:3017"
+    environment:
+      - NODE_ENV=production
+      - PROVIDER_SERVICE_PORT=3017
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-caas_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-caas_platform}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - KAFKA_BROKER=kafka:29092
+      - PROVIDER_WEBHOOK_SECRET=${PROVIDER_WEBHOOK_SECRET}
+    networks:
+      - caas_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3017/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  caas-analytics-service:
+    image: caas/analytics-service:${VERSION:-latest}
+    container_name: caas_analytics_service
+    restart: unless-stopped
+    ports:
+      - "3018:3018"
+    environment:
+      - NODE_ENV=production
+      - ANALYTICS_SERVICE_PORT=3018
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-caas_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-caas_platform}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+      - KAFKA_BROKER=kafka:29092
+    networks:
+      - caas_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3018/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  caas-graphql-gateway:
+    image: caas/graphql-gateway:${VERSION:-latest}
+    container_name: caas_graphql_gateway
+    restart: unless-stopped
+    ports:
+      - "3013:3013"
+    environment:
+      - NODE_ENV=production
+      - GRAPHQL_GATEWAY_PORT=3013
+      - RISK_SERVICE_URL=http://caas-risk-service:3015
+      - COMPLIANCE_SERVICE_URL=http://caas-compliance-service:3016
+      - PROVIDER_SERVICE_URL=http://caas-provider-service:3017
+      - ANALYTICS_SERVICE_URL=http://caas-analytics-service:3018
+      - API_URL=${API_URL:-http://localhost:3002}
+    networks:
+      - caas_network
+    depends_on:
+      - caas-risk-service
+      - caas-compliance-service
+      - caas-provider-service
+      - caas-analytics-service
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3013/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  caas-kafka-service:
+    image: caas/kafka-service:${VERSION:-latest}
+    container_name: caas_kafka_service
+    restart: unless-stopped
+    ports:
+      - "3014:3014"
+    environment:
+      - NODE_ENV=production
+      - KAFKA_SERVICE_PORT=3014
+      - KAFKA_BROKER=kafka:29092
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379
+    networks:
+      - caas_network
+    depends_on:
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3014/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   # Monitoring Stack
   prometheus:
     image: prom/prometheus:latest
@@ -429,6 +644,8 @@ volumes:
   postgres_data:
     driver: local
   redis_data:
+    driver: local
+  kafka_data:
     driver: local
   uploads:
     driver: local

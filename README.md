@@ -67,36 +67,41 @@ graph TB
 
 ## 💻 Technology Stack
 
-### Frontend
-- **Framework**: React 18+ with TypeScript
-- **Styling**: Tailwind CSS with shadcn/ui components
-- **Build Tool**: Vite
-- **State Management**: Zustand/Redux Toolkit
-- **API Client**: TanStack Query (React Query)
+### Frontend (current)
 
-### Backend
+- **Framework**: Next.js 14 (React 18 + TypeScript)
+- **Styling**: Tailwind CSS with shadcn/ui components
+- **Build Tool**: Next.js build
+- **State Management**: React Query; Zustand used in provider dashboard
+- **Notes**: Vite is not used currently (planned optional)
+
+### Backend (current)
+
 - **Runtime**: Node.js 20+ with TypeScript
-- **Framework**: Express/Fastify
-- **API Protocol**: REST + GraphQL
-- **Authentication**: OAuth 2.0, OpenID Connect
+- **Framework**: Fastify (some services use Express)
+- **API Protocol**: REST (GraphQL planned)
+- **Authentication**: JWT (OAuth2/OIDC planned)
 
 ### Smart Contracts
+
 - **Language**: Solidity 0.8+
 - **Framework**: Hardhat/Foundry
 - **Standards**: ERC-20, ERC-721, EIP-2612
 
-### Data Infrastructure
+### Data Infrastructure (current)
+
 - **Primary Database**: PostgreSQL 15+
 - **Cache**: Redis 7+
-- **Message Queue**: Apache Kafka
-- **Search**: Elasticsearch
+- **Message Queue**: (Kafka planned)
+- **Search**: (Elasticsearch planned)
 
-### DevOps & Infrastructure
-- **Container**: Docker
-- **Orchestration**: Kubernetes
-- **CI/CD**: GitHub Actions
+### DevOps & Infrastructure (current)
+
+- **Container**: Docker + Docker Compose
+- **Orchestration**: (Kubernetes + Helm planned)
+- **CI/CD**: GitHub Actions (baseline)
 - **Monitoring**: Prometheus + Grafana
-- **Logging**: ELK Stack
+- **Logging**: Structured logs; ELK planned
 
 ## 📚 Documentation Structure
 
@@ -156,11 +161,11 @@ graph TB
 
 ### Prerequisites
 
-- Node.js 20+ and npm/yarn
+- Node.js 20+ and npm/bun
 - Docker and Docker Compose
-- Kubernetes cluster (for deployment)
 - PostgreSQL 15+
 - Redis 7+
+- (Kubernetes optional for production; planned)
 
 ### Local Development Setup
 
@@ -176,7 +181,7 @@ npm install
 cp .env.example .env
 
 # Start infrastructure services
-docker-compose up -d postgres redis kafka
+docker-compose up -d postgres redis
 
 # Run database migrations
 npm run db:migrate
@@ -188,9 +193,8 @@ npm run dev
 ### Quick Links
 
 - [Architecture Decision Records (ADRs)](./adr/)
-- [API Playground](http://localhost:3000/api-docs)
-- [Monitoring Dashboard](http://localhost:3001/grafana)
-- [Service Mesh UI](http://localhost:3002/kiali)
+- API docs: see individual services' Swagger where available
+- Monitoring: Prometheus/Grafana (see `docker-compose.production.yml` ports)
 
 ## 🤝 Contributing
 
@@ -212,6 +216,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 ### Core Contracts
 
 #### CreditAggregator.sol
+
 - **Purpose**: Main contract for credit aggregation and lifecycle management
 - **Key Features**:
   - Credit request routing to optimal protocols
@@ -220,6 +225,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
   - Integration with collateral and scoring systems
 
 #### CollateralManager.sol
+
 - **Purpose**: Advanced multi-token collateral management
 - **Key Features**:
   - Multi-token collateral support
@@ -229,6 +235,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
   - Flash loan protection
 
 #### CreditScoringOracle.sol
+
 - **Purpose**: Sophisticated on-chain credit scoring
 - **Key Features**:
   - 0-1000 credit score scale
@@ -281,6 +288,7 @@ See [Data Architecture](./data-architecture.md) for database schemas and data fl
 ## Development Workflow
 
 ### Smart Contract Development
+
 1. Write contracts in `contracts/`
 2. Add tests in `test/`
 3. Compile with `npm run compile`
@@ -288,6 +296,7 @@ See [Data Architecture](./data-architecture.md) for database schemas and data fl
 5. Deploy with `npm run deploy:local`
 
 ### Adding New Features
+
 1. Update smart contracts if needed
 2. Update interfaces
 3. Add comprehensive tests
@@ -313,17 +322,20 @@ REPORT_GAS=true npm run test
 ## Deployment
 
 ### Local Development
+
 ```bash
 npm run node          # Start local blockchain
 npm run deploy:local  # Deploy to local network
 ```
 
 ### Testnet Deployment
+
 ```bash
 npm run deploy:testnet  # Deploy to Goerli/Sepolia
 ```
 
 ### Mainnet Deployment
+
 ```bash
 npm run deploy:mainnet  # Deploy to Ethereum mainnet
 ```
@@ -337,6 +349,7 @@ npm run deploy:mainnet  # Deploy to Ethereum mainnet
 5. Open a Pull Request
 
 ### Development Guidelines
+
 - Follow Solidity best practices
 - Write comprehensive tests for all new features
 - Update documentation for any API changes
@@ -352,6 +365,7 @@ npm run deploy:mainnet  # Deploy to Ethereum mainnet
 - Regular security assessments and updates
 
 ### Security Features
+
 - **ReentrancyGuard**: Protection against reentrancy attacks
 - **Pausable**: Emergency pause functionality
 - **Access Control**: Role-based permissions
@@ -366,12 +380,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Documentation: [docs.creditaas.io](https://docs.creditaas.io)
 - Discord: [Join our community](https://discord.gg/creditaas)
-- Email: support@creditaas.io
+- Email: <support@creditaas.io>
 - GitHub Issues: [Report bugs or request features](https://github.com/your-org/credit-as-a-service-platform/issues)
 
-## 🗓️ Development Roadmap & Status
+## 🗓️ Development Roadmap & Status (phased)
 
 ### Phase 1: Smart Contract Foundation ✅ COMPLETED
+
 - [x] Smart contract architecture (CreditAggregator, CollateralManager, CreditScoringOracle)
 - [x] Basic credit aggregation functionality
 - [x] Multi-token collateral management
@@ -379,81 +394,59 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [x] Security patterns and access controls
 
 ### Phase 2: Infrastructure & Testing ✅ COMPLETED
+
 - [x] Hardhat development environment
 - [x] Comprehensive test suite (96% coverage)
 - [x] Deployment scripts for multiple networks
 - [x] Gas optimization and performance testing
 - [x] Security audit preparations
 
-### Phase 3: Frontend & Admin Systems ✅ COMPLETED
-- [x] **TypeScript SDK** (`@caas/sdk`) - Comprehensive client library
-  - Event-driven architecture with circuit breaker patterns
-  - Full CRUD operations for users, loans, payments
-  - Zod validation and error handling
-- [x] **Web Dashboard** (`apps/web`) - Next.js 14 fintech interface
-  - Real-time metrics and analytics
-  - Loan management and user administration
-  - Gateway hub synchronized with onasis-gateway patterns
-- [x] **Admin Console** (`apps/admin`) - Enterprise management interface
-  - Role-based permissions and 2FA authentication
-  - System health monitoring and alerts
-  - Comprehensive audit logging
+### Phase 3: Frontend & Admin Systems ✅ PARTIAL
 
-### Phase 4: Backend API & Database ✅ COMPLETED
-- [x] **Database Schema Design** - PostgreSQL with Drizzle ORM
-  - 8 core tables: users, loans, payments, credit_reports, etc.
-  - Full relational design with proper indexing
-  - UUID primary keys for distributed systems
-- [x] **Fastify API Server** - Production-ready backend
-  - JWT authentication and API key management
-  - Rate limiting, CORS, and security middleware
-  - Swagger/OpenAPI documentation
-- [x] **Security Infrastructure**
-  - Password hashing with bcrypt
-  - Data encryption for sensitive information
-  - Request logging and audit trails
+- [x] **Web Dashboard** (`apps/web`) - Next.js 14
+- [x] **Admin Console** (`apps/admin`) - Next.js 14
+- [x] **Provider Dashboard** (`apps/credit-provider-dashboard`)
+- [ ] **TypeScript SDK** (`@caas/sdk`) - refine/extend coverage (partial)
 
-### Phase 5: API Route Handlers & Credit Engine ✅ COMPLETED
-- [x] **Authentication Routes** - Complete JWT system
-  - User registration and login with security
-  - Token refresh and session management
-  - Password change and user profile endpoints
-- [x] **User Management API** - Full CRUD operations
-  - Admin user creation and management
-  - Role-based access control and permissions
-  - User search, filtering, and pagination
-- [x] **Loan Processing System** - Application workflow
-  - Loan application submission and validation
-  - Credit scoring integration and rate calculation
-  - Admin approval workflow and status management
-- [x] **Payment Processing** - Transaction management
-  - Payment creation and method handling
-  - Payment status tracking and processing
-  - Refund system and transaction logging
-- [x] **Credit Scoring Engine** - Basic scoring system
-  - Credit score calculation and updates
-  - Credit report generation and retrieval
-  - Score categorization and history tracking
-- [x] **Admin Dashboard API** - Management interface
-  - System metrics and dashboard analytics
-  - API key management and permissions
-  - System health monitoring and logging
+### Phase 4: Backend API & Database ✅ PARTIAL
 
-### Phase 6: Protocol Integrations (NEXT)
+- [x] Database schemas (Neon analytics + Supabase real-time)
+- [x] Multiple services (auth, api-gateway, notifications, etc.)
+- [ ] GraphQL server (planned)
+- [ ] Kafka event bus (planned)
+
+### Phase 5: API Route Handlers & Credit Engine ✅ PARTIAL
+
+- [x] Auth, onboarding, providers, notifications, ledger, repayment (varies by service)
+- [ ] Risk service (planned)
+- [ ] Compliance service (planned)
+- [ ] Provider service (consolidation) (planned)
+
+### Phase 6: Protocol Integrations (planned)
+
 - [ ] Aave lending protocol integration
 - [ ] Compound finance integration
 - [ ] Chainlink oracle price feeds
 - [ ] Uniswap DEX integration
 - [ ] Multi-chain deployment support
 
-### Phase 7: Advanced Features (PLANNED)
+### Phase 7: Advanced Features (planned)
+
 - [ ] Cross-chain credit portability
 - [ ] Flash loan integration
 - [ ] Automated yield farming strategies
 - [ ] Mobile application (React Native)
 - [ ] Real-time WebSocket notifications
 
-### Phase 8: Enterprise & Compliance (PLANNED)
+### Phase 8: Enterprise & Compliance (planned)
+
+## Phased Implementation Checklist
+
+- Phase 3 Frontends: Web/Admin/Provider dashboards stabilized [in progress]
+- Phase 4 Backend: consolidate REST, add service health and tracing [in progress]
+- Phase 5 Services: implement Risk, Compliance, Provider core [planned]
+- Phase 6 Protocols: on-chain integrations [planned]
+- Phase 7/8: Advanced + Enterprise features [planned]
 - [ ] Institutional API endpoints
 - [ ] KYC/AML compliance automation
 - [ ] Advanced analytics and reporting
@@ -463,6 +456,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🏗️ Current Architecture Status
 
 ### ✅ Completed Components
+
 ```
 credit-as-a-service-platform/
 ├── packages/
@@ -478,6 +472,7 @@ credit-as-a-service-platform/
 ```
 
 ### 🔧 Infrastructure Ready
+
 - **Database**: PostgreSQL schema with 8 tables
 - **Authentication**: JWT + API key system
 - **API Documentation**: Swagger/OpenAPI integration
@@ -486,6 +481,7 @@ credit-as-a-service-platform/
 - **DevOps**: Docker, environment configs
 
 ### 📊 Development Metrics
+
 - **Smart Contracts**: 3 core contracts, 96% test coverage
 - **Frontend**: 2 complete applications (web + admin)
 - **Backend**: Full API server with 6 complete route groups

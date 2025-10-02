@@ -171,7 +171,7 @@ export class HttpClient extends EventEmitter<SdkEvents> {
   }
 
   async request<T = any>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    config.metadata = { requestStartTime: Date.now() };
+    config.metadata = { requestStartTime: Date.now(), startTime: Date.now() };
     
     try {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.request(config);

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./interfaces/ICollateralManager.sol";
 import "./interfaces/IPriceFeedAggregator.sol";
 import "./base/CreditProtocolBase.sol";
@@ -42,7 +42,7 @@ contract CollateralManager is CreditProtocolBase, ICollateralManager {
     event CollateralLiquidated(address indexed borrower, address indexed token, uint256 amount, address liquidator);
     event CollateralSwapped(address indexed user, address fromToken, address toToken, uint256 amountIn, uint256 amountOut);
     
-    constructor(address _priceFeed) {
+    constructor(address _priceFeed, address _owner) CreditProtocolBase(_owner) {
         priceFeed = IPriceFeedAggregator(_priceFeed);
     }
     

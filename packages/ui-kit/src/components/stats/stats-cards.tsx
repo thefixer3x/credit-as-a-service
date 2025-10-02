@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn, formatCurrency, formatNumber, formatPercentage } from '../../lib/utils.js';
+import { cn, formatCurrency, formatNumber, formatPercentage } from '../../lib/utils';
 import { ArrowUpRight, ArrowDownRight } from 'lucide-react';
 
 interface CardProps extends React.ComponentProps<'div'> {}
@@ -72,7 +72,7 @@ export function StatsCards({ data, className }: StatsCardsProps) {
       case 'currency':
         return formatCurrency(stat.value, stat.currency);
       case 'percentage':
-        return formatPercentage(stat.value, 2, false);
+        return formatPercentage(stat.value, 2);
       case 'number':
       default:
         return formatNumber(stat.value);

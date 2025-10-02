@@ -2,6 +2,1102 @@
   "version": "3.4",
   "log": [
     {
+      "@openzeppelin/contracts/access/Ownable.sol:Ownable": {
+        "src": "@openzeppelin/contracts/access/Ownable.sol:20",
+        "inherit": [
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "owner()",
+          "renounceOwnership()",
+          "transferOwnership(address)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "Ownable",
+            "src": "@openzeppelin/contracts/access/Ownable.sol:38"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/interfaces/IERC1363.sol:IERC1363": {
+        "src": "@openzeppelin/contracts/interfaces/IERC1363.sol:16",
+        "inherit": [
+          "@openzeppelin/contracts/utils/introspection/IERC165.sol:IERC165",
+          "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20"
+        ],
+        "libraries": [],
+        "methods": [
+          "transferAndCall(address,uint256)",
+          "transferAndCall(address,uint256,bytes)",
+          "transferFromAndCall(address,address,uint256)",
+          "transferFromAndCall(address,address,uint256,bytes)",
+          "approveAndCall(address,uint256)",
+          "approveAndCall(address,uint256,bytes)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/IERC20.sol:9",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "totalSupply()",
+          "balanceOf(address)",
+          "transfer(address,uint256)",
+          "allowance(address,address)",
+          "approve(address,uint256)",
+          "transferFrom(address,address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol:IERC20Metadata": {
+        "src": "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol:11",
+        "inherit": [
+          "@openzeppelin/contracts/token/ERC20/IERC20.sol:IERC20"
+        ],
+        "libraries": [],
+        "methods": [
+          "name()",
+          "symbol()",
+          "decimals()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:SafeERC20": {
+        "src": "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:18",
+        "version": {
+          "withMetadata": "3d321f2c1ad583ad5f9ebdae1df3cef76bc274db9139924f67c58cd6a7fbeab3",
+          "withoutMetadata": "a64c6cf9c6ba9368f5132c93a0196b3204a7963dbb4dd05dfddb4ab23126b8db",
+          "linkedWithoutMetadata": "a64c6cf9c6ba9368f5132c93a0196b3204a7963dbb4dd05dfddb4ab23126b8db"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/utils/Context.sol:Context": {
+        "src": "@openzeppelin/contracts/utils/Context.sol:16",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/utils/Pausable.sol:Pausable": {
+        "src": "@openzeppelin/contracts/utils/Pausable.sol:17",
+        "inherit": [
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "paused()"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [
+            {
+              "label": "_paused",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_bool",
+              "contract": "Pausable",
+              "src": "@openzeppelin/contracts/utils/Pausable.sol:18"
+            }
+          ],
+          "types": {
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard": {
+        "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:25",
+        "inherit": [],
+        "libraries": [],
+        "methods": [],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "ReentrancyGuard",
+            "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:47"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            }
+          ],
+          "types": {
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "@openzeppelin/contracts/utils/introspection/IERC165.sol:IERC165": {
+        "src": "@openzeppelin/contracts/utils/introspection/IERC165.sol:15",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "supportsInterface(bytes4)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/CollateralManager.sol:CollateralManager": {
+        "src": "contracts/CollateralManager.sol:17",
+        "version": {
+          "withMetadata": "0f8762a8498c90c295826943cba36c0df5b8ffcea5eec72e568ade7e25945d03",
+          "withoutMetadata": "d9ca9e1dc34df6bcfbe5cf048ae72a356f7070072da4ba1dca34876700d29574",
+          "linkedWithoutMetadata": "d9ca9e1dc34df6bcfbe5cf048ae72a356f7070072da4ba1dca34876700d29574"
+        },
+        "inherit": [
+          "contracts/interfaces/ICollateralManager.sol:ICollateralManager",
+          "contracts/base/CreditProtocolBase.sol:CreditProtocolBase",
+          "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard",
+          "@openzeppelin/contracts/utils/Pausable.sol:Pausable",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [
+          "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol:SafeERC20"
+        ],
+        "methods": [
+          "(address,address)",
+          "depositCollateral(address,uint256)",
+          "withdrawCollateral(address,uint256)",
+          "lockCollateral(address,address,uint256)",
+          "releaseCollateral(address,address,uint256)",
+          "getCollateralValue(address)",
+          "getAvailableCollateral(address,address)",
+          "getLockedCollateral(address,address)",
+          "liquidateCollateral(address,address,uint256,address)",
+          "swapCollateral(address,address,uint256,uint256)",
+          "getSupportedTokens()",
+          "getCollateralInfo(address,address)",
+          "calculateLiquidationValue(address,address)",
+          "addSupportedCollateral(address,uint256,uint256)",
+          "removeSupportedCollateral(address)",
+          "updateCollateralFactor(address,uint256)",
+          "updateLiquidationThreshold(address,uint256)",
+          "updatePriceFeed(address)",
+          "emergencyWithdraw(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "CollateralManager",
+            "src": "contracts/CollateralManager.sol:45"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_paused",
+              "offset": 20,
+              "slot": "0",
+              "type": "t_bool",
+              "contract": "Pausable",
+              "src": "@openzeppelin/contracts/utils/Pausable.sol:18"
+            },
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            },
+            {
+              "label": "authorizedContracts",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "CreditProtocolBase",
+              "src": "contracts/base/CreditProtocolBase.sol:16"
+            },
+            {
+              "label": "userCollateral",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_address,t_mapping(t_address,t_struct(CollateralInfo)1052_storage))",
+              "contract": "CollateralManager",
+              "src": "contracts/CollateralManager.sol:27"
+            },
+            {
+              "label": "supportedCollateral",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "CollateralManager",
+              "src": "contracts/CollateralManager.sol:28"
+            },
+            {
+              "label": "collateralFactors",
+              "offset": 0,
+              "slot": "5",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "CollateralManager",
+              "src": "contracts/CollateralManager.sol:29"
+            },
+            {
+              "label": "liquidationThresholds",
+              "offset": 0,
+              "slot": "6",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "CollateralManager",
+              "src": "contracts/CollateralManager.sol:30"
+            },
+            {
+              "label": "priceFeed",
+              "offset": 0,
+              "slot": "7",
+              "type": "t_contract(IPriceFeedAggregator)4122",
+              "contract": "CollateralManager",
+              "src": "contracts/CollateralManager.sol:32"
+            },
+            {
+              "label": "supportedTokensList",
+              "offset": 0,
+              "slot": "8",
+              "type": "t_array(t_address)dyn_storage",
+              "contract": "CollateralManager",
+              "src": "contracts/CollateralManager.sol:36"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_address)dyn_storage": {
+              "label": "address[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_contract(IPriceFeedAggregator)4122": {
+              "label": "contract IPriceFeedAggregator",
+              "numberOfBytes": "20"
+            },
+            "t_mapping(t_address,t_bool)": {
+              "label": "mapping(address => bool)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_mapping(t_address,t_struct(CollateralInfo)1052_storage))": {
+              "label": "mapping(address => mapping(address => struct CollateralManager.CollateralInfo))",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_struct(CollateralInfo)1052_storage)": {
+              "label": "mapping(address => struct CollateralManager.CollateralInfo)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(CollateralInfo)1052_storage": {
+              "label": "struct CollateralManager.CollateralInfo",
+              "members": [
+                {
+                  "label": "token",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "amount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "lockedAmount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "lastUpdateTime",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                }
+              ],
+              "numberOfBytes": "128"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/CreditAggregator.sol:CreditAggregator": {
+        "src": "contracts/CreditAggregator.sol:17",
+        "version": {
+          "withMetadata": "4ab97b8aa4f912be397449af882137a5c607c16fea1e063183f9435ab7ffcfa1",
+          "withoutMetadata": "0767990af8da36ed025272e48b7c6adb3f3d979542196e87e267dfd23051c9c7",
+          "linkedWithoutMetadata": "0767990af8da36ed025272e48b7c6adb3f3d979542196e87e267dfd23051c9c7"
+        },
+        "inherit": [
+          "contracts/interfaces/ICreditAggregator.sol:ICreditAggregator",
+          "contracts/base/CreditProtocolBase.sol:CreditProtocolBase",
+          "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard",
+          "@openzeppelin/contracts/utils/Pausable.sol:Pausable",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "(address,address,address,address)",
+          "requestCredit(uint256,address,uint256,uint256)",
+          "repayCredit(uint256,uint256)",
+          "liquidate(uint256)",
+          "getUserCredits(address)",
+          "getCreditPosition(uint256)",
+          "setProtocolWeight(address,uint256)",
+          "updateCollateralManager(address)",
+          "updateCreditScoringOracle(address)",
+          "updateRiskManager(address)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "CreditAggregator",
+            "src": "contracts/CreditAggregator.sol:51"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_paused",
+              "offset": 20,
+              "slot": "0",
+              "type": "t_bool",
+              "contract": "Pausable",
+              "src": "@openzeppelin/contracts/utils/Pausable.sol:18"
+            },
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            },
+            {
+              "label": "authorizedContracts",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "CreditProtocolBase",
+              "src": "contracts/base/CreditProtocolBase.sol:16"
+            },
+            {
+              "label": "creditPositions",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_uint256,t_struct(CreditPosition)2150_storage)",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:38"
+            },
+            {
+              "label": "userCredits",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_address,t_array(t_uint256)dyn_storage)",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:39"
+            },
+            {
+              "label": "protocolWeights",
+              "offset": 0,
+              "slot": "5",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:40"
+            },
+            {
+              "label": "_creditIdCounter",
+              "offset": 0,
+              "slot": "6",
+              "type": "t_uint256",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:42"
+            },
+            {
+              "label": "collateralManager",
+              "offset": 0,
+              "slot": "7",
+              "type": "t_contract(ICollateralManager)4008",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:43"
+            },
+            {
+              "label": "creditScoringOracle",
+              "offset": 0,
+              "slot": "8",
+              "type": "t_contract(ICreditScoringOracle)4095",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:44"
+            },
+            {
+              "label": "riskManager",
+              "offset": 0,
+              "slot": "9",
+              "type": "t_contract(IRiskManager)4151",
+              "contract": "CreditAggregator",
+              "src": "contracts/CreditAggregator.sol:45"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_array(t_uint256)dyn_storage": {
+              "label": "uint256[]",
+              "numberOfBytes": "32"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_contract(ICollateralManager)4008": {
+              "label": "contract ICollateralManager",
+              "numberOfBytes": "20"
+            },
+            "t_contract(ICreditScoringOracle)4095": {
+              "label": "contract ICreditScoringOracle",
+              "numberOfBytes": "20"
+            },
+            "t_contract(IRiskManager)4151": {
+              "label": "contract IRiskManager",
+              "numberOfBytes": "20"
+            },
+            "t_enum(CreditStatus)2155": {
+              "label": "enum CreditAggregator.CreditStatus",
+              "members": [
+                "Active",
+                "Repaid",
+                "Defaulted",
+                "Liquidated"
+              ],
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_address,t_array(t_uint256)dyn_storage)": {
+              "label": "mapping(address => uint256[])",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_bool)": {
+              "label": "mapping(address => bool)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_uint256,t_struct(CreditPosition)2150_storage)": {
+              "label": "mapping(uint256 => struct CreditAggregator.CreditPosition)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(CreditPosition)2150_storage": {
+              "label": "struct CreditAggregator.CreditPosition",
+              "members": [
+                {
+                  "label": "borrower",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "principal",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "interestRate",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "collateralAmount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "collateralToken",
+                  "type": "t_address",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "startTime",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "duration",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "6"
+                },
+                {
+                  "label": "status",
+                  "type": "t_enum(CreditStatus)2155",
+                  "offset": 0,
+                  "slot": "7"
+                },
+                {
+                  "label": "lendingProtocol",
+                  "type": "t_address",
+                  "offset": 1,
+                  "slot": "7"
+                }
+              ],
+              "numberOfBytes": "256"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/CreditScoringOracle.sol:CreditScoringOracle": {
+        "src": "contracts/CreditScoringOracle.sol:12",
+        "version": {
+          "withMetadata": "b4e0c71dfd0f9e8043cd0edf1e715f79210a9dc0ead89eba20998e007674c8d6",
+          "withoutMetadata": "c5f538a4acaeddb28794eb837c1023de991b3dac9adc6f682164ee9f55e22700",
+          "linkedWithoutMetadata": "c5f538a4acaeddb28794eb837c1023de991b3dac9adc6f682164ee9f55e22700"
+        },
+        "inherit": [
+          "@openzeppelin/contracts/utils/Pausable.sol:Pausable",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context",
+          "contracts/interfaces/ICreditScoringOracle.sol:ICreditScoringOracle"
+        ],
+        "libraries": [],
+        "methods": [
+          "(address)",
+          "getCreditData(address)",
+          "updateCreditMetrics(address,uint8,uint256)",
+          "calculateCreditScore(address)",
+          "getUserCreditSummary(address)",
+          "getScoreBreakdown(address)",
+          "isEligibleForCredit(address,uint256)",
+          "addAuthorizedUpdater(address)",
+          "removeAuthorizedUpdater(address)",
+          "setCreditLimit(address,uint256)",
+          "batchUpdateScores(address[])",
+          "initializeUser(address,uint256,uint256,uint256,uint256,uint256)",
+          "pause()",
+          "unpause()",
+          "emergencyResetScore(address,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "CreditScoringOracle",
+            "src": "contracts/CreditScoringOracle.sol:40"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_paused",
+              "offset": 20,
+              "slot": "0",
+              "type": "t_bool",
+              "contract": "Pausable",
+              "src": "@openzeppelin/contracts/utils/Pausable.sol:18"
+            },
+            {
+              "label": "creditHistory",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_mapping(t_address,t_struct(CreditData)4063_storage)",
+              "contract": "CreditScoringOracle",
+              "src": "contracts/CreditScoringOracle.sol:14"
+            },
+            {
+              "label": "authorizedUpdaters",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "CreditScoringOracle",
+              "src": "contracts/CreditScoringOracle.sol:15"
+            },
+            {
+              "label": "userFirstBorrowTime",
+              "offset": 0,
+              "slot": "3",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "CreditScoringOracle",
+              "src": "contracts/CreditScoringOracle.sol:16"
+            },
+            {
+              "label": "userTotalCreditLimit",
+              "offset": 0,
+              "slot": "4",
+              "type": "t_mapping(t_address,t_uint256)",
+              "contract": "CreditScoringOracle",
+              "src": "contracts/CreditScoringOracle.sol:17"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_address,t_bool)": {
+              "label": "mapping(address => bool)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_struct(CreditData)4063_storage)": {
+              "label": "mapping(address => struct ICreditScoringOracle.CreditData)",
+              "numberOfBytes": "32"
+            },
+            "t_mapping(t_address,t_uint256)": {
+              "label": "mapping(address => uint256)",
+              "numberOfBytes": "32"
+            },
+            "t_struct(CreditData)4063_storage": {
+              "label": "struct ICreditScoringOracle.CreditData",
+              "members": [
+                {
+                  "label": "score",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "0"
+                },
+                {
+                  "label": "totalBorrowed",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "1"
+                },
+                {
+                  "label": "totalRepaid",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "2"
+                },
+                {
+                  "label": "defaultCount",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "3"
+                },
+                {
+                  "label": "onTimePayments",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "4"
+                },
+                {
+                  "label": "utilizationRate",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "5"
+                },
+                {
+                  "label": "lastUpdateBlock",
+                  "type": "t_uint256",
+                  "offset": 0,
+                  "slot": "6"
+                }
+              ],
+              "numberOfBytes": "224"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/Greeter.sol:Greeter": {
+        "src": "contracts/Greeter.sol:4",
+        "version": {
+          "withMetadata": "b3b4e5fb3d139c64e4fb6acdd1f2370e4ba344d1e878221d4a8a7f4fab94beee",
+          "withoutMetadata": "2df4dd85bf190be688d3eb13c23ed3fd5b067357f20479d5b3629d015e2d9796",
+          "linkedWithoutMetadata": "2df4dd85bf190be688d3eb13c23ed3fd5b067357f20479d5b3629d015e2d9796"
+        },
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "(string)",
+          "greet()",
+          "setGreeting(string)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "Greeter",
+            "src": "contracts/Greeter.sol:7"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "greeting",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_string_storage",
+              "contract": "Greeter",
+              "src": "contracts/Greeter.sol:5"
+            }
+          ],
+          "types": {
+            "t_string_storage": {
+              "label": "string",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/base/CreditProtocolBase.sol:CreditProtocolBase": {
+        "src": "contracts/base/CreditProtocolBase.sol:12",
+        "inherit": [
+          "@openzeppelin/contracts/utils/ReentrancyGuard.sol:ReentrancyGuard",
+          "@openzeppelin/contracts/utils/Pausable.sol:Pausable",
+          "@openzeppelin/contracts/access/Ownable.sol:Ownable",
+          "@openzeppelin/contracts/utils/Context.sol:Context"
+        ],
+        "libraries": [],
+        "methods": [
+          "addAuthorizedContract(address)",
+          "removeAuthorizedContract(address)",
+          "pause()",
+          "unpause()",
+          "isAuthorized(address)"
+        ],
+        "linkReferences": [],
+        "errors": [
+          {
+            "kind": "constructor",
+            "contract": "CreditProtocolBase",
+            "src": "contracts/base/CreditProtocolBase.sol:14"
+          }
+        ],
+        "layout": {
+          "storage": [
+            {
+              "label": "_owner",
+              "offset": 0,
+              "slot": "0",
+              "type": "t_address",
+              "contract": "Ownable",
+              "src": "@openzeppelin/contracts/access/Ownable.sol:21"
+            },
+            {
+              "label": "_paused",
+              "offset": 20,
+              "slot": "0",
+              "type": "t_bool",
+              "contract": "Pausable",
+              "src": "@openzeppelin/contracts/utils/Pausable.sol:18"
+            },
+            {
+              "label": "_status",
+              "offset": 0,
+              "slot": "1",
+              "type": "t_uint256",
+              "contract": "ReentrancyGuard",
+              "src": "@openzeppelin/contracts/utils/ReentrancyGuard.sol:40"
+            },
+            {
+              "label": "authorizedContracts",
+              "offset": 0,
+              "slot": "2",
+              "type": "t_mapping(t_address,t_bool)",
+              "contract": "CreditProtocolBase",
+              "src": "contracts/base/CreditProtocolBase.sol:16"
+            }
+          ],
+          "types": {
+            "t_address": {
+              "label": "address",
+              "numberOfBytes": "20"
+            },
+            "t_bool": {
+              "label": "bool",
+              "numberOfBytes": "1"
+            },
+            "t_mapping(t_address,t_bool)": {
+              "label": "mapping(address => bool)",
+              "numberOfBytes": "32"
+            },
+            "t_uint256": {
+              "label": "uint256",
+              "numberOfBytes": "32"
+            }
+          },
+          "layoutVersion": "1.2",
+          "flat": true,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/interfaces/ICollateralManager.sol:ICollateralManager": {
+        "src": "contracts/interfaces/ICollateralManager.sol:8",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "depositCollateral(address,uint256)",
+          "withdrawCollateral(address,uint256)",
+          "lockCollateral(address,address,uint256)",
+          "releaseCollateral(address,address,uint256)",
+          "liquidateCollateral(address,address,uint256,address)",
+          "getCollateralValue(address)",
+          "getAvailableCollateral(address,address)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/interfaces/ICreditAggregator.sol:ICreditAggregator": {
+        "src": "contracts/interfaces/ICreditAggregator.sol:8",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "requestCredit(uint256,address,uint256,uint256)",
+          "repayCredit(uint256,uint256)",
+          "liquidate(uint256)",
+          "getUserCredits(address)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/interfaces/ICreditScoringOracle.sol:ICreditScoringOracle": {
+        "src": "contracts/interfaces/ICreditScoringOracle.sol:8",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getCreditData(address)",
+          "updateCreditMetrics(address,uint8,uint256)",
+          "calculateCreditScore(address)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/interfaces/IPriceFeedAggregator.sol:IPriceFeedAggregator": {
+        "src": "contracts/interfaces/IPriceFeedAggregator.sol:8",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getPrice(address)",
+          "getPriceWithTimestamp(address)",
+          "isTokenSupported(address)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      },
+      "contracts/interfaces/IRiskManager.sol:IRiskManager": {
+        "src": "contracts/interfaces/IRiskManager.sol:8",
+        "inherit": [],
+        "libraries": [],
+        "methods": [
+          "getMinimumCreditScore()",
+          "calculateRiskScore(address,uint256)",
+          "isLoanApproved(address,uint256,uint256)"
+        ],
+        "linkReferences": [],
+        "errors": [],
+        "layout": {
+          "storage": [],
+          "types": {},
+          "layoutVersion": "1.2",
+          "flat": false,
+          "namespaces": {}
+        },
+        "solcVersion": "0.8.20"
+      }
+    },
+    {
       "contracts/Greeter.sol:Greeter": {
         "src": "contracts/Greeter.sol:4",
         "version": {

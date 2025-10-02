@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn, formatCurrency } from '../../lib/utils.js';
+import { cn, formatCurrency } from '../../lib/utils';
 import { Calendar, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 
 export interface PaymentScheduleItem {

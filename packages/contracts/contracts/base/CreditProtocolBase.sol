@@ -1,15 +1,17 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title CreditProtocolBase
  * @dev Base contract with common functionality for all protocol contracts
  */
 abstract contract CreditProtocolBase is Ownable, Pausable, ReentrancyGuard {
+    
+    constructor(address _owner) Ownable(_owner) {}
     
     mapping(address => bool) public authorizedContracts;
     

@@ -1,0 +1,189 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: caas-platform-ingress
+  namespace: caas-platform
+  labels:
+    app.kubernetes.io/name: caas-platform
+    app.kubernetes.io/instance: caas-platform
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: ingress
+    app.kubernetes.io/part-of: caas-platform
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "300"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "300"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://caas-platform.com,https://admin.caas-platform.com,https://provider.caas-platform.com"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - caas-platform.com
+    - admin.caas-platform.com
+    - provider.caas-platform.com
+    - api.caas-platform.com
+    - graphql.caas-platform.com
+    secretName: caas-platform-tls
+  rules:
+  # Main web application
+  - host: caas-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-web
+            port:
+              number: 3000
+  # Admin portal
+  - host: admin.caas-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-admin
+            port:
+              number: 3001
+  # Provider dashboard
+  - host: provider.caas-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-provider-dashboard
+            port:
+              number: 3009
+  # API endpoints
+  - host: api.caas-platform.com
+    http:
+      paths:
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-api-gateway
+            port:
+              number: 3002
+      - path: /notifications
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-notifications
+            port:
+              number: 3003
+      - path: /documents
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-documents
+            port:
+              number: 3004
+      - path: /risk
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-risk-service
+            port:
+              number: 3015
+      - path: /compliance
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-compliance-service
+            port:
+              number: 3016
+      - path: /providers
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-provider-service
+            port:
+              number: 3017
+      - path: /analytics
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-analytics-service
+            port:
+              number: 3018
+      - path: /kafka
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-kafka-service
+            port:
+              number: 3014
+  # GraphQL endpoint
+  - host: graphql.caas-platform.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: caas-graphql-gateway
+            port:
+              number: 3013
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: caas-platform-network-policy
+  namespace: caas-platform
+  labels:
+    app.kubernetes.io/name: caas-platform
+    app.kubernetes.io/instance: caas-platform
+    app.kubernetes.io/version: "1.0.0"
+    app.kubernetes.io/component: network-policy
+    app.kubernetes.io/part-of: caas-platform
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: caas-platform
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: caas-platform
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

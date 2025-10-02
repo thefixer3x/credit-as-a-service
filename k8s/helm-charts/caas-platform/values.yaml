@@ -1,0 +1,265 @@
+# Default values for caas-platform
+# This is a YAML-formatted file.
+
+# Global configuration
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+# Image configuration
+image:
+  registry: docker.io
+  repository: caas
+  tag: "1.0.0"
+  pullPolicy: IfNotPresent
+
+# Service configuration
+service:
+  type: ClusterIP
+  ports:
+    web: 3000
+    admin: 3001
+    api: 3002
+    notifications: 3003
+    documents: 3004
+    risk: 3005
+    payments: 3006
+    monitoring: 3007
+    creditProviders: 3008
+    providerDashboard: 3009
+    adminProviderManagement: 3012
+    graphqlGateway: 3013
+    kafkaService: 3014
+    riskService: 3015
+    complianceService: 3016
+    providerService: 3017
+    analyticsService: 3018
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: caas-platform.com
+      paths:
+        - path: /
+          pathType: Prefix
+          service:
+            name: caas-web
+            port: 3000
+        - path: /admin
+          pathType: Prefix
+          service:
+            name: caas-admin
+            port: 3001
+        - path: /api
+          pathType: Prefix
+          service:
+            name: caas-api
+            port: 3002
+        - path: /graphql
+          pathType: Prefix
+          service:
+            name: caas-graphql-gateway
+            port: 3013
+        - path: /provider
+          pathType: Prefix
+          service:
+            name: caas-provider-dashboard
+            port: 3009
+  tls:
+    - secretName: caas-platform-tls
+      hosts:
+        - caas-platform.com
+
+# Resource configuration
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+# Autoscaling configuration
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Node selection
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity
+affinity: {}
+
+# Pod security context
+podSecurityContext:
+  fsGroup: 2000
+
+# Container security context
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# Environment variables
+env:
+  NODE_ENV: production
+  LOG_LEVEL: info
+  DATABASE_URL: ""
+  REDIS_URL: ""
+  JWT_SECRET: ""
+  JWT_REFRESH_SECRET: ""
+  ENCRYPTION_KEY: ""
+  KAFKA_BROKER: ""
+
+# Secrets
+secrets:
+  create: true
+  name: caas-platform-secrets
+  data: {}
+
+# ConfigMaps
+configMaps:
+  create: true
+  name: caas-platform-config
+  data: {}
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 10Gi
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    scrapeTimeout: 10s
+
+# PostgreSQL configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    database: "caas_platform"
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+# Redis configuration
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: ""
+  master:
+    persistence:
+      enabled: true
+      size: 5Gi
+    resources:
+      limits:
+        cpu: 500m
+        memory: 1Gi
+      requests:
+        cpu: 250m
+        memory: 512Mi
+
+# Kafka configuration
+kafka:
+  enabled: true
+  replicaCount: 1
+  persistence:
+    enabled: true
+    size: 10Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+
+# Prometheus configuration
+prometheus:
+  enabled: true
+  server:
+    persistentVolume:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+
+# Grafana configuration
+grafana:
+  enabled: true
+  adminPassword: ""
+  persistence:
+    enabled: true
+    size: 5Gi
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
+
+# Service mesh configuration
+istio:
+  enabled: false
+  gateway:
+    enabled: false
+  virtualService:
+    enabled: false
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+  egress:
+    enabled: true
+
+# Pod disruption budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Horizontal Pod Autoscaler
+hpa:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80

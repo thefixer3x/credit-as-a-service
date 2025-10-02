@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/security/Pausable.sol";
+import "@openzeppelin/contracts/utils/Pausable.sol";
 import "./interfaces/ICreditScoringOracle.sol";
 
 /**
@@ -37,7 +37,7 @@ contract CreditScoringOracle is ICreditScoringOracle, Ownable, Pausable {
         _;
     }
     
-    constructor() {
+    constructor(address _owner) Ownable(_owner) {
         // Initialize with contract deployer as authorized updater
         authorizedUpdaters[msg.sender] = true;
     }

@@ -1,0 +1,109 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "ICreditScoringOracle",
+  "sourceName": "contracts/interfaces/ICreditScoringOracle.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "calculateCreditScore",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        }
+      ],
+      "name": "getCreditData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "score",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalBorrowed",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "totalRepaid",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "defaultCount",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "onTimePayments",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "utilizationRate",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "lastUpdateBlock",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct ICreditScoringOracle.CreditData",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "user",
+          "type": "address"
+        },
+        {
+          "internalType": "enum ICreditScoringOracle.CreditUpdateType",
+          "name": "updateType",
+          "type": "uint8"
+        },
+        {
+          "internalType": "uint256",
+          "name": "value",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateCreditMetrics",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}

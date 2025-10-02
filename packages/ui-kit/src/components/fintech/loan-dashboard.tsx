@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn, formatCurrency, formatPercentage } from '../../lib/utils.js';
+import { cn, formatCurrency, formatPercentage } from '../../lib/utils';
 import { TrendingUp, Calendar, DollarSign, Percent } from 'lucide-react';
 
 export interface LoanData {
@@ -96,7 +96,7 @@ export function LoanDashboard({
             <span className="text-sm text-muted-foreground">Interest Rate</span>
           </div>
           <div className="text-xl font-semibold">
-            {formatPercentage(loan.interestRate, 2, false)}
+            {formatPercentage(loan.interestRate, 2)}
           </div>
         </div>
 
