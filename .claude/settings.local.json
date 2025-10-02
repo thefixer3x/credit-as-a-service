@@ -18,7 +18,15 @@
       "Bash(ls:*)",
       "mcp___21st-dev_magic__21st_magic_component_inspiration",
       "Bash(gh repo view:*)",
-      "mcp___21st-dev_magic__21st_magic_component_builder"
+      "mcp___21st-dev_magic__21st_magic_component_builder",
+      "Bash(git commit:*)",
+      "Bash(mv:*)",
+      "Bash(bunx tsc:*)",
+      "Bash(grep:*)",
+      "Bash(npm run build:*)",
+      "mcp__hostinger-api__VPS_getActionListV1",
+      "mcp__hostinger-api__VPS_getBackupListV1",
+      "Bash(git add:*)"
     ],
     "deny": []
   }

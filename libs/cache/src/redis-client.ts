@@ -1,15 +1,23 @@
-import Redis, { RedisOptions } from 'ioredis';
+import Redis, { RedisOptions, Cluster, ClusterOptions } from 'ioredis';
 import pino from 'pino';
 import { validateEnv } from '@caas/config';
 
 const logger = pino({ name: 'redis-client' });
 const env = validateEnv();
 
+export interface SessionConfig {
+  ttlSeconds: number;
+  extendOnAccess: boolean;
+  maxSessions: number;
+  sessionKeyPrefix: string;
+  userSessionsPrefix: string;
+}
+
 export interface CacheConfig {
   host: string;
-  port: number;
+  port: string;
   password?: string;
-  db: number;
+  db: string;
   keyPrefix: string;
   maxRetriesPerRequest: number;
   retryDelayOnFailover: number;
@@ -17,68 +25,125 @@ export interface CacheConfig {
   commandTimeout: number;
   lazyConnect: boolean;
   enableAutoPipelining: boolean;
+  enableCluster: boolean;
+  clusterNodes?: Array<{ host: string; port: number }>;
+  enableTLS: boolean;
+  tlsCert?: string;
+  tlsKey?: string;
+  tlsCa?: string;
+  maxMemoryPolicy: string;
+  enableOfflineQueue: boolean;
+  keepAlive: number;
+  connectionPoolSize: number;
 }
 
 export class RedisClient {
-  private client: Redis;
-  private subscriber: Redis;
-  private publisher: Redis;
+  private client!: Redis | Cluster;
+  private subscriber!: Redis | Cluster;
+  private publisher!: Redis | Cluster;
   private isConnected: boolean = false;
+  private config: CacheConfig;
 
   constructor(config?: Partial<CacheConfig>) {
     const defaultConfig: CacheConfig = {
-      host: env.REDIS_HOST || 'localhost',
-      port: parseInt(env.REDIS_PORT || '6379'),
-      password: env.REDIS_PASSWORD,
-      db: parseInt(env.REDIS_DB || '0'),
-      keyPrefix: env.REDIS_KEY_PREFIX || 'caas:',
+      host: (env as any).REDIS_HOST || 'localhost',
+      port: String((env as any).REDIS_PORT || '6379'),
+      password: (env as any).REDIS_PASSWORD,
+      db: (env as any).REDIS_DB || '0',
+      keyPrefix: (env as any).REDIS_KEY_PREFIX || 'caas:',
       maxRetriesPerRequest: 3,
       retryDelayOnFailover: 100,
       connectTimeout: 10000,
       commandTimeout: 5000,
       lazyConnect: true,
-      enableAutoPipelining: true
+      enableAutoPipelining: true,
+      enableCluster: (env as any).REDIS_CLUSTER_ENABLED === 'true',
+      clusterNodes: (env as any).REDIS_CLUSTER_NODES ? 
+        JSON.parse((env as any).REDIS_CLUSTER_NODES) : undefined,
+      enableTLS: (env as any).REDIS_TLS_ENABLED === 'true',
+      tlsCert: (env as any).REDIS_TLS_CERT,
+      tlsKey: (env as any).REDIS_TLS_KEY,
+      tlsCa: (env as any).REDIS_TLS_CA,
+      maxMemoryPolicy: (env as any).REDIS_MAX_MEMORY_POLICY || 'allkeys-lru',
+      enableOfflineQueue: true,
+      keepAlive: 1,
+      connectionPoolSize: parseInt((env as any).REDIS_POOL_SIZE || '10', 10)
     };
 
-    const finalConfig = { ...defaultConfig, ...config };
-    const redisOptions: RedisOptions = {
-      host: finalConfig.host,
-      port: finalConfig.port,
-      password: finalConfig.password,
-      db: finalConfig.db,
-      keyPrefix: finalConfig.keyPrefix,
-      maxRetriesPerRequest: finalConfig.maxRetriesPerRequest,
-      retryDelayOnFailover: finalConfig.retryDelayOnFailover,
-      connectTimeout: finalConfig.connectTimeout,
-      commandTimeout: finalConfig.commandTimeout,
-      lazyConnect: finalConfig.lazyConnect,
-      enableAutoPipelining: finalConfig.enableAutoPipelining,
-      // Connection pool settings
+    this.config = { ...defaultConfig, ...config };
+    
+    if (this.config.enableCluster && this.config.clusterNodes) {
+      this.initializeCluster();
+    } else {
+      this.initializeSingleNode();
+    }
+
+    this.setupEventListeners();
+  }
+
+  private initializeSingleNode(): void {
+    const redisUrl = `redis://${this.config.host}:${this.config.port}/${this.config.db}`;
+    const redisOptions = this.getRedisOptions();
+
+    // Create main client
+    this.client = new Redis(redisUrl, redisOptions);
+    
+    // Create subscriber client
+    this.subscriber = new Redis(redisUrl, redisOptions);
+    
+    // Create publisher client
+    this.publisher = new Redis(redisUrl, redisOptions);
+  }
+
+  private initializeCluster(): void {
+    if (!this.config.clusterNodes) {
+      throw new Error('Cluster nodes must be specified when cluster mode is enabled');
+    }
+
+    const clusterOptions: ClusterOptions = {
+      ...this.getRedisOptions(),
+      enableOfflineQueue: this.config.enableOfflineQueue,
+      scaleReads: 'slave'
+    };
+
+    // Create cluster clients
+    this.client = new Cluster(this.config.clusterNodes, clusterOptions);
+    this.subscriber = new Cluster(this.config.clusterNodes, clusterOptions);
+    this.publisher = new Cluster(this.config.clusterNodes, clusterOptions);
+  }
+
+  private getRedisOptions(): RedisOptions {
+    const options: RedisOptions = {
+      password: this.config.password,
+      keyPrefix: this.config.keyPrefix,
+      maxRetriesPerRequest: this.config.maxRetriesPerRequest,
+      connectTimeout: this.config.connectTimeout,
+      commandTimeout: this.config.commandTimeout,
+      lazyConnect: this.config.lazyConnect,
+      enableAutoPipelining: this.config.enableAutoPipelining,
       family: 4,
-      keepAlive: true,
-      // Retry strategy
+      keepAlive: this.config.keepAlive,
       retryStrategy: (times) => {
         const delay = Math.min(times * 50, 2000);
         logger.warn({ times, delay }, 'Redis connection retry');
         return delay;
       },
-      // Reconnect on error
       reconnectOnError: (err) => {
         const targetError = 'READONLY';
         return err.message.includes(targetError);
       }
     };
 
-    // Create main client
-    this.client = new Redis(redisOptions);
-    
-    // Create subscriber client
-    this.subscriber = new Redis(redisOptions);
-    
-    // Create publisher client
-    this.publisher = new Redis(redisOptions);
+    // Add TLS configuration if enabled
+    if (this.config.enableTLS) {
+      options.tls = {
+        cert: this.config.tlsCert,
+        key: this.config.tlsKey,
+        ca: this.config.tlsCa
+      };
+    }
 
-    this.setupEventListeners();
+    return options;
   }
 
   private setupEventListeners(): void {
@@ -154,21 +219,21 @@ export class RedisClient {
   /**
    * Get Redis client instance
    */
-  getClient(): Redis {
+  getClient(): Redis | Cluster {
     return this.client;
   }
 
   /**
    * Get subscriber instance
    */
-  getSubscriber(): Redis {
+  getSubscriber(): Redis | Cluster {
     return this.subscriber;
   }
 
   /**
    * Get publisher instance
    */
-  getPublisher(): Redis {
+  getPublisher(): Redis | Cluster {
     return this.publisher;
   }
 

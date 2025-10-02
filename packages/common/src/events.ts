@@ -1,0 +1,177 @@
+// Note: EventFactory would typically be imported from the notifications service
+// For now, we'll create a simplified version here to avoid circular dependencies
+
+// Simplified EventFactory for common package
+export class EventFactory {
+  private static readonly VERSION = '1.0.0';
+
+  public static createLoanSubmitted(data: {
+    loanId: string;
+    userId: string;
+    amount: number;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'loan.application.submitted',
+      timestamp: Date.now(),
+      source: data.source || 'loan-service',
+      version: this.VERSION,
+      data: {
+        loanId: data.loanId,
+        userId: data.userId,
+        amount: data.amount,
+        status: 'submitted',
+      },
+    };
+  }
+
+  public static createSystemAlert(data: {
+    message: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    component?: string;
+    metrics?: Record<string, any>;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'system.alert',
+      timestamp: Date.now(),
+      source: data.source || 'system',
+      version: this.VERSION,
+      data: {
+        severity: data.severity,
+        message: data.message,
+        component: data.component,
+        metrics: data.metrics,
+      },
+    };
+  }
+}
+
+// Utility function for publishing events from any service
+export async function publishEvent(eventData: any, serviceUrl?: string): Promise<void> {
+  const url = serviceUrl || process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3009';
+  
+  try {
+    const response = await fetch(`${url}/api/v1/events/publish`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(eventData),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to publish event: ${response.statusText}`);
+    }
+  } catch (error) {
+    console.error('Error publishing event:', error);
+    throw error;
+  }
+}
+
+// Helper functions for common event publishing
+export class EventPublisher {
+  private serviceUrl: string;
+
+  constructor(serviceUrl?: string) {
+    this.serviceUrl = serviceUrl || process.env.NOTIFICATIONS_SERVICE_URL || 'http://localhost:3009';
+  }
+
+  async publishLoanSubmitted(data: {
+    loanId: string;
+    userId: string;
+    amount: number;
+  }): Promise<void> {
+    const event = EventFactory.createLoanSubmitted({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+
+  async publishLoanApproved(data: {
+    loanId: string;
+    userId: string;
+    amount: number;
+    reviewerId: string;
+  }): Promise<void> {
+    const event = EventFactory.createLoanApproved({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+
+  async publishLoanRejected(data: {
+    loanId: string;
+    userId: string;
+    amount: number;
+    reviewerId: string;
+    reason: string;
+  }): Promise<void> {
+    const event = EventFactory.createLoanRejected({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+
+  async publishPaymentProcessed(data: {
+    paymentId: string;
+    loanId: string;
+    userId: string;
+    amount: number;
+    method: string;
+  }): Promise<void> {
+    const event = EventFactory.createPaymentProcessed({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+
+  async publishPaymentFailed(data: {
+    paymentId: string;
+    loanId: string;
+    userId: string;
+    amount: number;
+    method?: string;
+    error: string;
+  }): Promise<void> {
+    const event = EventFactory.createPaymentFailed({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+
+  async publishUserRegistered(data: {
+    userId: string;
+    email: string;
+    profile?: Record<string, any>;
+  }): Promise<void> {
+    const event = EventFactory.createUserRegistered({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+
+  async publishSystemAlert(data: {
+    message: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    component?: string;
+    metrics?: Record<string, any>;
+  }): Promise<void> {
+    const event = EventFactory.createSystemAlert({
+      ...data,
+      source: process.env.SERVICE_NAME || 'unknown-service',
+    });
+    return publishEvent(event, this.serviceUrl);
+  }
+}
+
+// Default instance
+export const eventPublisher = new EventPublisher();

@@ -7,6 +7,11 @@ export const environmentSchema = z.object({
   // Database
   DATABASE_URL: z.string().url(),
   REDIS_URL: z.string().url(),
+  REDIS_HOST: z.string(),
+  REDIS_PORT: z.coerce.number(),
+  REDIS_PASSWORD: z.string().optional(),
+  REDIS_DB: z.coerce.number().optional(),
+  REDIS_KEY_PREFIX: z.string().optional(),
   
   // Authentication
   JWT_SECRET: z.string().min(32),

@@ -35,6 +35,13 @@ export class CacheService {
   }
 
   /**
+   * Get underlying Redis client
+   */
+  getClient() {
+    return this.redisClient.getClient();
+  }
+
+  /**
    * Get value from cache
    */
   async get<T = any>(key: string): Promise<T | null> {

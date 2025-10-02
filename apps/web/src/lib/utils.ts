@@ -1,5 +1,5 @@
-import { type ClassValue, clsx } from "clsx";
-import { twMerge } from "tailwind-merge";
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -10,39 +10,28 @@ export function formatCurrency(amount: number, currency: string = 'USD'): string
     style: 'currency',
     currency,
     minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
+    maximumFractionDigits: 2,
   }).format(amount);
 }
 
 export function formatNumber(num: number): string {
-  return new Intl.NumberFormat('en-US').format(num);
+  return new Intl.NumberFormat('en-US', {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  }).format(num);
 }
 
-export function formatPercentage(value: number): string {
-  return `${value.toFixed(1)}%`;
-}
-
-export function formatDate(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
+export function formatDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
   return new Intl.DateTimeFormat('en-US', {
+    year: 'numeric',
     month: 'short',
     day: 'numeric',
-    year: 'numeric',
-  }).format(dateObj);
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(d);
 }
 
-export function formatTimeAgo(date: string | Date): string {
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  const now = new Date();
-  const diffInMs = now.getTime() - dateObj.getTime();
-  const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  const diffInDays = Math.floor(diffInHours / 24);
-
-  if (diffInMinutes < 1) return 'just now';
-  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-  if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-  if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-  
-  return formatDate(dateObj);
+export function generateId(): string {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }

@@ -1,0 +1,52 @@
+{
+  "name": "@caas/common",
+  "version": "1.0.0",
+  "description": "Common utilities and types for Credit-as-a-Service Platform",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs", 
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src/**/*.{ts,tsx}",
+    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.22.0",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "typescript": "^5.2.2",
+    "rollup": "^4.0.0",
+    "@rollup/plugin-typescript": "^11.1.5",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-commonjs": "^25.0.5",
+    "vitest": "^0.34.6",
+    "eslint": "^8.51.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.4",
+    "@typescript-eslint/parser": "^6.7.4",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@types/minimatch": "^5.1.2"
+  },
+  "keywords": [
+    "utilities",
+    "types",
+    "common",
+    "credit-as-a-service",
+    "shared"
+  ],
+  "author": "Credit-as-a-Service Platform",
+  "license": "MIT"
+}
