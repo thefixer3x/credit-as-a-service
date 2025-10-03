@@ -47,6 +47,121 @@ export class EventFactory {
       },
     };
   }
+
+  public static createLoanApproved(data: {
+    loanId: string;
+    userId: string;
+    amount: number;
+    reviewerId: string;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'loan.application.approved',
+      timestamp: Date.now(),
+      source: data.source || 'underwriting-service',
+      version: this.VERSION,
+      data: {
+        loanId: data.loanId,
+        userId: data.userId,
+        amount: data.amount,
+        reviewerId: data.reviewerId,
+        status: 'approved',
+      },
+    };
+  }
+
+  public static createLoanRejected(data: {
+    loanId: string;
+    userId: string;
+    amount: number;
+    reviewerId: string;
+    reason?: string;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'loan.application.rejected',
+      timestamp: Date.now(),
+      source: data.source || 'underwriting-service',
+      version: this.VERSION,
+      data: {
+        loanId: data.loanId,
+        userId: data.userId,
+        amount: data.amount,
+        reviewerId: data.reviewerId,
+        reason: data.reason,
+        status: 'rejected',
+      },
+    };
+  }
+
+  public static createPaymentProcessed(data: {
+    paymentId: string;
+    loanId: string;
+    userId: string;
+    amount: number;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'payment.processed',
+      timestamp: Date.now(),
+      source: data.source || 'repayment-service',
+      version: this.VERSION,
+      data: {
+        paymentId: data.paymentId,
+        loanId: data.loanId,
+        userId: data.userId,
+        amount: data.amount,
+        status: 'processed',
+      },
+    };
+  }
+
+  public static createPaymentFailed(data: {
+    paymentId: string;
+    loanId: string;
+    userId: string;
+    amount: number;
+    reason?: string;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'payment.failed',
+      timestamp: Date.now(),
+      source: data.source || 'repayment-service',
+      version: this.VERSION,
+      data: {
+        paymentId: data.paymentId,
+        loanId: data.loanId,
+        userId: data.userId,
+        amount: data.amount,
+        reason: data.reason,
+        status: 'failed',
+      },
+    };
+  }
+
+  public static createUserRegistered(data: {
+    userId: string;
+    email: string;
+    source?: string;
+  }) {
+    return {
+      id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      type: 'user.registered',
+      timestamp: Date.now(),
+      source: data.source || 'auth-service',
+      version: this.VERSION,
+      data: {
+        userId: data.userId,
+        email: data.email,
+        status: 'active',
+      },
+    };
+  }
 }
 
 // Utility function for publishing events from any service

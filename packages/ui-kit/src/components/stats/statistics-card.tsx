@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn, formatNumber } from '../../lib/utils.js';
+import { cn, formatNumber } from '../../lib/utils';
 import { ArrowDown, ArrowUp, MoreHorizontal } from 'lucide-react';
 
 export interface StatisticData {

@@ -1,0 +1,44 @@
+{
+  "name": "@caas/compliance-service",
+  "version": "1.0.0",
+  "description": "KYC/AML and Regulatory Compliance Service",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "lint": "eslint src/**/*.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@caas/config": "workspace:*",
+    "@caas/types": "workspace:*",
+    "@caas/database": "workspace:*",
+    "@caas/common": "workspace:*",
+    "fastify": "^4.24.0",
+    "@fastify/cors": "^8.4.0",
+    "@fastify/helmet": "^11.1.0",
+    "@fastify/rate-limit": "^9.0.0",
+    "@fastify/swagger": "^8.12.0",
+    "@fastify/swagger-ui": "^2.0.0",
+    "zod": "^3.22.0",
+    "pino": "^8.16.0",
+    "drizzle-orm": "^0.29.0",
+    "postgres": "^3.4.0",
+    "ioredis": "^5.3.0",
+    "uuid": "^9.0.0",
+    "axios": "^1.6.0",
+    "crypto": "^1.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/uuid": "^9.0.0",
+    "tsx": "^4.6.0",
+    "typescript": "^5.2.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.45.0"
+  }
+}

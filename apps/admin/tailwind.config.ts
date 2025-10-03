@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss';
-import { uiKitConfig } from '@caas/ui-kit/tailwind';
+import uiKitConfig from '@caas/ui-kit/tailwind';
 
 const config: Config = {
   ...uiKitConfig,

@@ -40,14 +40,21 @@
   "author": "Credit-as-a-Service Team",
   "license": "MIT",
   "devDependencies": {
+    "@rollup/plugin-json": "^6.1.0",
+    "@tailwindcss/forms": "^0.5.10",
+    "@tailwindcss/typography": "^0.5.19",
+    "@types/bun": "^1.2.23",
+    "@types/minimatch": "^6.0.0",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
     "bun-types": "^1.2.19",
+    "clsx": "^2.1.1",
     "eslint": "^8.45.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.29.0",
     "prettier": "^3.0.0",
+    "tailwind-merge": "^3.3.1",
     "turbo": "^1.10.0",
     "typescript": "^5.2.0"
   },
@@ -55,5 +62,8 @@
     "bun": ">=1.0.0",
     "node": ">=20.0.0"
   },
-  "packageManager": "bun@1.0.0"
+  "packageManager": "bun@1.0.0",
+  "dependencies": {
+    "@radix-ui/react-tabs": "^1.1.13"
+  }
 }

@@ -1,6 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import resolve from '@rollup/plugin-node-resolve';
 import commonjs from '@rollup/plugin-commonjs';
+import json from '@rollup/plugin-json';
 import terser from '@rollup/plugin-terser';
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 
@@ -13,7 +14,7 @@ export default {
       sourcemap: true,
     },
     {
-      file: 'dist/index.esm.js',
+      file: 'dist/index.mjs',
       format: 'esm',
       sourcemap: true,
     },
@@ -22,6 +23,7 @@ export default {
     peerDepsExternal(),
     resolve(),
     commonjs(),
+    json(),
     typescript({ tsconfig: './tsconfig.json' }),
     terser(),
   ],

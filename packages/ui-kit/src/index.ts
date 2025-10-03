@@ -9,6 +9,7 @@ export * from './components/ui/badge';
 export * from './components/ui/progress';
 export * from './components/ui/toaster';
 export * from './components/ui/notification-center';
+export * from './components/ui/tabs';
 
 // 21st.dev Components - Dashboard Stats
 export * from './components/stats/stats-cards';
