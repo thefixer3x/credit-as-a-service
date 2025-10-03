@@ -279,7 +279,11 @@ export function useNotifications(options: UseNotificationsOptions = {}): Notific
   }, []);
 
   const markAsRead = useCallback((notificationId: string) => {
-    setReadNotifications(prev => new Set([...prev, notificationId]));
+    setReadNotifications(prev => {
+      const newSet = new Set(prev);
+      newSet.add(notificationId);
+      return newSet;
+    });
   }, []);
 
   // Auto-connect effect

@@ -10,6 +10,16 @@ export interface Metric {
   timestamp: number;
 }
 
+export interface AggregatedMetric {
+  name: string;
+  count: number;
+  latest: number;
+  average: number;
+  min: number;
+  max: number;
+  type: string;
+}
+
 export interface HealthCheck {
   name: string;
   status: 'healthy' | 'unhealthy' | 'degraded';

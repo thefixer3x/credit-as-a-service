@@ -10,6 +10,7 @@ const nextConfig = {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@caas/ui-kit': path.resolve(__dirname, '../../packages/ui-kit/src'),
+      '@caas/ui-kit/styles': path.resolve(__dirname, '../../packages/ui-kit/dist/styles.css'),
       '@caas/common': path.resolve(__dirname, '../../packages/common/src'),
       '@caas/sdk': path.resolve(__dirname, '../../packages/sdk/src'),
       '@caas/config': path.resolve(__dirname, '../../packages/config/src'),

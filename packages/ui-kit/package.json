@@ -12,7 +12,11 @@
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
     },
-    "./styles": "./dist/styles.css"
+    "./styles": {
+      "import": "./dist/styles.css",
+      "require": "./dist/styles.css"
+    },
+    "./tailwind": "./tailwind.ts"
   },
   "scripts": {
     "build": "rollup -c",

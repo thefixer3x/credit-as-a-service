@@ -212,7 +212,7 @@ async function startMonitoringService() {
 
     // WebSocket endpoint for real-time metrics
     const server = app.listen(PORT, () => {
-      logger.info({ port: PORT }, 'Monitoring service started');
+      logger.info(`Monitoring service started on port ${PORT}`);
     });
 
     // Set up scheduled tasks

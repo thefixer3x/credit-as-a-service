@@ -351,7 +351,7 @@ export class DashboardService {
       uptime: number;
     };
   } {
-    const summary = this.metricsAggregator.getMetricsSummary(timeWindow);
+    const summary = this.metricsAggregator.getMetricSummary(timeWindow);
     const topMetrics = this.metricsAggregator.getTopMetrics(timeWindow, 5);
 
     // Calculate metrics per second (rough estimate)
