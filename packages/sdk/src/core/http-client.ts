@@ -9,6 +9,13 @@ import {
   SdkEvents 
 } from '../types/index.js';
 
+interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
+  metadata?: {
+    requestStartTime: number;
+    startTime: number;
+  };
+}
+
 export class HttpClient extends EventEmitter<SdkEvents> {
   private client: AxiosInstance;
   private requestCount: number = 0;
@@ -170,7 +177,7 @@ export class HttpClient extends EventEmitter<SdkEvents> {
     );
   }
 
-  async request<T = any>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  async request<T = any>(config: ExtendedAxiosRequestConfig): Promise<ApiResponse<T>> {
     config.metadata = { requestStartTime: Date.now(), startTime: Date.now() };
     
     try {

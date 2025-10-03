@@ -424,10 +424,11 @@ export default function ProviderDashboard() {
                       <div key={item.rating} className="flex items-center justify-between text-sm">
                         <div className="flex items-center space-x-2">
                           <div 
-                            className="w-3 h-3 rounded-full"
-                            style={{ 
-                              backgroundColor: index === 0 ? '#10b981' : index === 1 ? '#f59e0b' : '#ef4444'
-                            }}
+                            className={`w-3 h-3 rounded-full ${
+                              index === 0 ? 'risk-indicator-low' : 
+                              index === 1 ? 'risk-indicator-medium' : 
+                              'risk-indicator-high'
+                            }`}
                           />
                           <span>{item.rating} Risk</span>
                         </div>

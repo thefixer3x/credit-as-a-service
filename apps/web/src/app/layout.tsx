@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { AuthProvider } from '@/components/providers/auth-provider';
-import { ToastProvider } from '@/components/providers/toast-provider';
+import { AppToastProvider } from '@/components/providers/toast-provider';
 // @caas/ui-kit styles are included via Tailwind configuration
 import './globals.css';
 
@@ -61,11 +61,11 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <ToastProvider>
+              <AppToastProvider>
                 <div className="min-h-screen bg-background font-sans antialiased">
                   {children}
                 </div>
-              </ToastProvider>
+              </AppToastProvider>
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>
