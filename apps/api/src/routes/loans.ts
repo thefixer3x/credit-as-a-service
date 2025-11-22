@@ -183,21 +183,27 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       // Ensure rate is within bounds
       estimatedRate = Math.max(3.0, Math.min(50.0, estimatedRate));
 
+      // Generate application number
+      const applicationNumber = `LA-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create loan application record
       const [newApplication] = await db.insert(loanApplications).values({
         userId: user.userId,
-        amount: applicationData.amount,
+        applicationNumber,
+        loanType: applicationData.purpose,
+        requestedAmount: applicationData.amount.toString(),
+        amount: applicationData.amount.toString(),
         purpose: applicationData.purpose,
         termMonths: applicationData.termMonths,
-        annualIncome: applicationData.annualIncome,
+        annualIncome: applicationData.annualIncome ? applicationData.annualIncome.toString() : undefined,
         employmentStatus: applicationData.employmentStatus,
-        monthlyDebtPayments: applicationData.monthlyDebtPayments,
-        collateralValue: applicationData.collateralValue,
+        monthlyDebtPayments: applicationData.monthlyDebtPayments ? applicationData.monthlyDebtPayments.toString() : undefined,
+        collateralValue: applicationData.collateralValue ? applicationData.collateralValue.toString() : undefined,
         collateralType: applicationData.collateralType,
         description: applicationData.description,
         creditScore,
-        debtToIncomeRatio,
-        estimatedRate,
+        debtToIncomeRatio: debtToIncomeRatio.toString(),
+        estimatedRate: estimatedRate.toString(),
         status: 'pending',
       }).returning({
         id: loanApplications.id,
@@ -339,11 +345,11 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       }
       
       if (minAmount !== undefined) {
-        conditions.push(gte(loanApplications.amount, minAmount));
+        conditions.push(gte(loanApplications.amount, minAmount.toString()));
       }
-      
+
       if (maxAmount !== undefined) {
-        conditions.push(lte(loanApplications.amount, maxAmount));
+        conditions.push(lte(loanApplications.amount, maxAmount.toString()));
       }
 
       // Get total count for pagination

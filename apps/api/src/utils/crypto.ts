@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { Secret } from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32);
+const JWT_SECRET: Secret = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
 const ENCRYPTION_IV_LENGTH = 16;
 
 // Password hashing

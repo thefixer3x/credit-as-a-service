@@ -182,10 +182,14 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
       const paymentType = paymentData.amount >= monthlyPaymentAmount * 0.9 ? 'regular' : 'partial';
 
+      // Generate payment number
+      const paymentNumber = `PMT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create payment record
       const [newPayment] = await db.insert(payments).values({
         userId: loan.userId,
         loanId: paymentData.loanId,
+        paymentNumber,
         amount: paymentData.amount.toString(),
         principalAmount: (paymentData.amount * 0.8).toString(), // Estimate, should be calculated properly
         interestAmount: (paymentData.amount * 0.2).toString(), // Estimate, should be calculated properly
@@ -739,27 +743,33 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
         });
       }
 
-      const refundAmount = amount || originalPayment.amount;
+      const refundAmount = amount || parseFloat(originalPayment.amount);
 
-      if (refundAmount > originalPayment.amount) {
+      if (refundAmount > parseFloat(originalPayment.amount)) {
         return reply.status(400).send({
           error: 'Bad Request',
           message: 'Refund amount cannot exceed original payment amount'
         });
       }
 
+      // Generate payment number for refund
+      const refundPaymentNumber = `REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create refund record (negative payment)
       const [refund] = await db.insert(payments).values({
         userId: originalPayment.userId,
         loanId: originalPayment.loanId,
-        amount: -refundAmount, // Negative amount for refund
+        paymentNumber: refundPaymentNumber,
+        amount: (-refundAmount).toString(), // Negative amount for refund
+        principalAmount: '0',
+        interestAmount: '0',
         paymentMethod: originalPayment.paymentMethod,
         status: 'refunded',
         paymentType: 'refund',
+        scheduledDate: new Date(),
         paymentReference: `REFUND-${originalPayment.id}`,
         notes: `Refund: ${reason}`,
         processedAt: new Date(),
-        originalPaymentId: paymentId,
       }).returning({
         id: payments.id,
         amount: payments.amount,
@@ -768,7 +778,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
       });
 
       // Update original payment status if full refund
-      if (refundAmount === originalPayment.amount) {
+      if (refundAmount === parseFloat(originalPayment.amount)) {
         await db.update(payments)
           .set({ 
             status: 'refunded',
