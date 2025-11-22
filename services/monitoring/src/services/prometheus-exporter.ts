@@ -1,4 +1,5 @@
-import { MetricsCollector, AggregatedMetric } from '@caas/common';
+import { MetricsCollector } from '@caas/common';
+import { AggregatedMetric } from './metrics-aggregator.js';
 
 export interface PrometheusMetric {
   name: string;
