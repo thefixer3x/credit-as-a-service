@@ -202,12 +202,12 @@ export class HttpClient extends EventEmitter<SdkEvents> {
     );
   }
 
-  private async retryRequest<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
+  private async retryRequest<T>(config: ExtendedAxiosRequestConfig): Promise<ApiResponse<T>> {
     const retryCount = ((config as any).retryCount || 0) + 1;
     const delay = this.config.retryDelay * Math.pow(2, retryCount - 1); // Exponential backoff
-    
+
     await new Promise(resolve => setTimeout(resolve, delay));
-    
+
     (config as any).retryCount = retryCount;
     return this.request<T>(config);
   }
