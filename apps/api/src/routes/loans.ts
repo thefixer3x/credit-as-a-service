@@ -43,7 +43,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
     await request.jwtVerify();
     const user = request.user;
     
-    if (!user || !['admin', 'moderator'].includes(user.role)) {
+    if (!user || !['admin', 'moderator'].includes(user.role || '')) {
       return reply.status(403).send({
         error: 'Forbidden',
         message: 'Admin or moderator access required'
@@ -227,7 +227,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Loan application submission failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: user.userId,
         amount: applicationData.amount,
         requestId: request.id,
@@ -360,11 +360,11 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       const totalPages = Math.ceil(totalLoans / limit);
 
       // Get paginated results with user info
-      const sortColumn = loanApplications[sortBy as keyof typeof loanApplications];
+      const sortColumn = loanApplications[sortBy as keyof typeof loanApplications] as any;
       const sortFn = sortOrder === 'asc' ? asc : desc;
-      
+
       const offset = (page - 1) * limit;
-      
+
       const query = db.select({
         id: loanApplications.id,
         userId: loanApplications.userId,
@@ -422,7 +422,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to retrieve loans', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -532,7 +532,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get loan', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId,
         requestId: request.id,
       });
@@ -616,8 +616,8 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
         .set({
           status: updateData.status,
           adminNotes: updateData.adminNotes,
-          approvedAmount: updateData.approvedAmount,
-          approvedRate: updateData.approvedRate,
+          approvedAmount: updateData.approvedAmount ? updateData.approvedAmount.toString() : undefined,
+          approvedRate: updateData.approvedRate ? updateData.approvedRate.toString() : undefined,
           approvedTermMonths: updateData.approvedTermMonths,
           updatedAt: new Date(),
         })
@@ -647,7 +647,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Loan status update failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId,
         requestId: request.id,
       });
@@ -700,7 +700,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       }
 
       // Prevent deletion of active loans
-      if (['funded', 'active'].includes(loan.status)) {
+      if (['funded', 'active'].includes(loan.status || '')) {
         return reply.status(400).send({
           error: 'Bad Request',
           message: 'Cannot delete active loans'
@@ -724,7 +724,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Loan deletion failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId,
         requestId: request.id,
       });
