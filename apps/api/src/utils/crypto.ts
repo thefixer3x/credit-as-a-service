@@ -1,8 +1,8 @@
 import bcrypt from 'bcryptjs';
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt, { Secret, SignOptions } from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET: Secret = process.env.JWT_SECRET || 'your-super-secret-jwt-key';
+const JWT_SECRET: Secret = (process.env.JWT_SECRET || 'your-super-secret-jwt-key') as Secret;
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
 const ENCRYPTION_IV_LENGTH = 16;
 
@@ -24,8 +24,8 @@ export interface JwtPayload {
   sessionId?: string;
 }
 
-export function generateToken(payload: JwtPayload, expiresIn: string = '24h'): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn });
+export function generateToken(payload: JwtPayload, expiresIn: string | number = '24h'): string {
+  return jwt.sign(payload, JWT_SECRET, { expiresIn } as SignOptions);
 }
 
 export function verifyToken(token: string): JwtPayload {
