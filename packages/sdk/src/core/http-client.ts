@@ -132,7 +132,7 @@ export class HttpClient extends EventEmitter<SdkEvents> {
   }
 
   private calculateDuration(config: any): number {
-    const requestStart = config.metadata?.requestStartTime || Date.now();
+    const requestStart = (config as any).metadata?.requestStartTime || Date.now();
     return Date.now() - requestStart;
   }
 
