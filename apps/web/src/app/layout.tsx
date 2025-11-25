@@ -3,8 +3,7 @@ import { Inter } from 'next/font/google';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { AuthProvider } from '@/components/providers/auth-provider';
-import { ToastProvider } from '@/components/providers/toast-provider';
-import '@caas/ui-kit/styles';
+import { AppToastProvider } from '@/components/providers/toast-provider';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -61,11 +60,11 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <ToastProvider>
+              <AppToastProvider>
                 <div className="min-h-screen bg-background font-sans antialiased">
                   {children}
                 </div>
-              </ToastProvider>
+              </AppToastProvider>
             </AuthProvider>
           </QueryProvider>
         </ThemeProvider>

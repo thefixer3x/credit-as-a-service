@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { validateEnv } from '@caas/config';
 import pino from 'pino';
-import { retry } from 'retry';
+import * as retry from 'retry';
+import { createHmac, timingSafeEqual } from 'crypto';
 
 const logger = pino({ name: 'sme-api-client' });
 const env = validateEnv();
@@ -151,7 +152,7 @@ export class SMEAPIClient {
         maxTimeout: 10000,
       });
 
-      operation_with_retry.attempt(async (currentAttempt) => {
+      operation_with_retry.attempt(async (currentAttempt: number) => {
         try {
           const response = await operation();
           resolve(response.data);
@@ -279,11 +280,11 @@ export class SMEAPIClient {
     );
   }
 
-  async verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
-    const hmac = crypto.createHmac('sha256', secret);
+  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+    const hmac = createHmac('sha256', secret);
     hmac.update(payload);
     const expectedSignature = `sha256=${hmac.digest('hex')}`;
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
+    return timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature));
   }
 
   // Authentication APIs
