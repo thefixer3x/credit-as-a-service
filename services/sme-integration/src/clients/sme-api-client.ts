@@ -280,11 +280,7 @@ export class SMEAPIClient {
     );
   }
 
-<<<<<<< HEAD
-  verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
-=======
   async verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
->>>>>>> main
     const hmac = createHmac('sha256', secret);
     hmac.update(payload);
     const expectedSignature = `sha256=${hmac.digest('hex')}`;
