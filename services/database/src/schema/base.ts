@@ -17,16 +17,15 @@ export const baseFields = {
 
 // Tenants table for multi-tenancy
 export const tenants = pgTable('tenants', {
-  id: uuid('id').primaryKey().$defaultFn(() => nanoid()),
+  ...baseFields,
   name: text('name').notNull(),
   slug: text('slug').notNull().unique(),
   domain: text('domain'),
   status: text('status', { enum: ['active', 'inactive', 'suspended'] }).default('active').notNull(),
   settings: text('settings'), // JSON settings
-  subscriptionTier: text('subscription_tier', { 
-    enum: ['free', 'starter', 'professional', 'enterprise'] 
+  subscriptionTier: text('subscription_tier', {
+    enum: ['free', 'starter', 'professional', 'enterprise']
   }).default('free').notNull(),
-  ...baseFields,
 });
 
 // Organizations table (businesses using the platform)
