@@ -47,11 +47,24 @@ export const loanApplications = pgTable('loan_applications', {
   applicationNumber: varchar('application_number', { length: 50 }).notNull().unique(),
   loanType: varchar('loan_type', { length: 50 }).notNull(), // personal, auto, mortgage, business
   requestedAmount: decimal('requested_amount', { precision: 12, scale: 2 }).notNull(),
+  amount: decimal('amount', { precision: 12, scale: 2 }).notNull(), // Alias for requestedAmount for backward compatibility
   approvedAmount: decimal('approved_amount', { precision: 12, scale: 2 }),
   interestRate: decimal('interest_rate', { precision: 5, scale: 4 }),
   termMonths: integer('term_months').notNull(),
   purpose: varchar('purpose', { length: 100 }).notNull(),
   status: varchar('status', { length: 20 }).default('pending'), // pending, approved, rejected, cancelled
+  creditScore: integer('credit_score'),
+  estimatedRate: decimal('estimated_rate', { precision: 5, scale: 4 }),
+  approvedRate: decimal('approved_rate', { precision: 5, scale: 4 }),
+  approvedTermMonths: integer('approved_term_months'),
+  annualIncome: decimal('annual_income', { precision: 12, scale: 2 }),
+  employmentStatus: varchar('employment_status', { length: 50 }),
+  collateralValue: decimal('collateral_value', { precision: 12, scale: 2 }),
+  collateralType: varchar('collateral_type', { length: 50 }),
+  debtToIncomeRatio: decimal('debt_to_income_ratio', { precision: 5, scale: 4 }),
+  monthlyDebtPayments: decimal('monthly_debt_payments', { precision: 10, scale: 2 }),
+  description: text('description'),
+  adminNotes: text('admin_notes'),
   riskAssessment: jsonb('risk_assessment').$type<{
     score: number;
     factors: string[];
@@ -120,12 +133,19 @@ export const payments = pgTable('payments', {
   principalAmount: decimal('principal_amount', { precision: 10, scale: 2 }).notNull(),
   interestAmount: decimal('interest_amount', { precision: 10, scale: 2 }).notNull(),
   feesAmount: decimal('fees_amount', { precision: 10, scale: 2 }).default('0'),
+  expectedAmount: decimal('expected_amount', { precision: 10, scale: 2 }),
   paymentMethod: varchar('payment_method', { length: 20 }).notNull(), // ach, card, wire, check
+  paymentType: varchar('payment_type', { length: 20 }), // scheduled, manual, autopay
   paymentReference: varchar('payment_reference', { length: 100 }),
+  transactionId: varchar('transaction_id', { length: 100 }),
   status: varchar('status', { length: 20 }).default('pending'), // pending, completed, failed, refunded
   scheduledDate: timestamp('scheduled_date').notNull(),
+  dueDate: timestamp('due_date'),
   processedDate: timestamp('processed_date'),
+  processedAt: timestamp('processed_at'), // Alias for processedDate
   failureReason: text('failure_reason'),
+  processorResponse: text('processor_response'),
+  notes: text('notes'),
   metadata: jsonb('metadata'),
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),

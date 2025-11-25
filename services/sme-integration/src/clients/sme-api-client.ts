@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { validateEnv } from '@caas/config';
 import pino from 'pino';
-import * as retry from 'retry';
+import retry from 'retry';
 import { createHmac, timingSafeEqual } from 'crypto';
 
 const logger = pino({ name: 'sme-api-client' });
@@ -280,7 +280,11 @@ export class SMEAPIClient {
     );
   }
 
+<<<<<<< HEAD
   verifyWebhookSignature(payload: string, signature: string, secret: string): boolean {
+=======
+  async verifyWebhookSignature(payload: string, signature: string, secret: string): Promise<boolean> {
+>>>>>>> main
     const hmac = createHmac('sha256', secret);
     hmac.update(payload);
     const expectedSignature = `sha256=${hmac.digest('hex')}`;

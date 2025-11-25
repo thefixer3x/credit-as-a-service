@@ -80,7 +80,7 @@ export const creditRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get credit score', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: user.userId,
         requestId: request.id,
       });
@@ -170,7 +170,7 @@ export const creditRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Credit score calculation failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: targetUserId,
         requestId: request.id,
       });
@@ -256,7 +256,7 @@ export const creditRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get credit report', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: targetUserId,
         requestId: request.id,
       });

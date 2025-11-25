@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/components/providers/theme-provider';
 import { QueryProvider } from '@/components/providers/query-provider';
 import { AuthProvider } from '@/components/providers/auth-provider';
 import { AppToastProvider } from '@/components/providers/toast-provider';
+// @caas/ui-kit styles are included via Tailwind configuration
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });

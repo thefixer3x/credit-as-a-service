@@ -149,7 +149,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Registration failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         email: validatedData.email,
         requestId: request.id,
         ipAddress: request.ip,
@@ -263,7 +263,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
       const tokenPayload = {
         userId: user.id,
         email: user.email,
-        role: user.role,
+        role: user.role || 'user',
         sessionId,
       };
 
@@ -309,7 +309,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Login failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         email,
         requestId: request.id,
         ipAddress: request.ip,
@@ -401,7 +401,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.warn('Token refresh failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -535,7 +535,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Password change failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: user.userId,
         requestId: request.id,
       });
@@ -609,7 +609,7 @@ export const authRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get user profile', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: user.userId,
         requestId: request.id,
       });

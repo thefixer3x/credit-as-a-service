@@ -27,6 +27,13 @@ export default [
       typescript({ tsconfig: './tsconfig.json' }),
       terser(),
     ],
+    onwarn(warning, warn) {
+      // Suppress "use client" directive warnings from dependencies
+      if (warning.code === 'MODULE_LEVEL_DIRECTIVE' && warning.message.includes('"use client"')) {
+        return;
+      }
+      warn(warning);
+    },
   },
   {
     input: 'src/styles/index.css',

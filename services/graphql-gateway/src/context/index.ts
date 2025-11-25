@@ -1,10 +1,18 @@
 import { FastifyRequest } from 'fastify';
+import jwt from 'jsonwebtoken';
 
 export interface GraphQLContext {
   request: FastifyRequest;
   userId?: string;
   userRole?: string;
   isAuthenticated: boolean;
+}
+
+interface JWTPayload {
+  userId: string;
+  role: string;
+  iat?: number;
+  exp?: number;
 }
 
 export async function context({ request }: { request: FastifyRequest }): Promise<GraphQLContext> {
@@ -16,22 +24,21 @@ export async function context({ request }: { request: FastifyRequest }): Promise
 
   if (authHeader && authHeader.startsWith('Bearer ')) {
     try {
-      // In a real implementation, you would verify the JWT token here
-      // For now, we'll just extract basic info from the header
       const token = authHeader.substring(7);
-      
-      // TODO: Implement JWT verification
-      // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      // userId = decoded.userId;
-      // userRole = decoded.role;
-      // isAuthenticated = true;
-      
-      // Placeholder for now
+      const jwtSecret = process.env.JWT_SECRET;
+
+      if (!jwtSecret) {
+        throw new Error('JWT_SECRET is not configured');
+      }
+
+      // Verify and decode the JWT token
+      const decoded = jwt.verify(token, jwtSecret) as JWTPayload;
+
+      userId = decoded.userId;
+      userRole = decoded.role;
       isAuthenticated = true;
-      userId = 'placeholder-user-id';
-      userRole = 'user';
     } catch (error) {
-      // Token verification failed
+      // Token verification failed (invalid signature, expired, malformed, etc.)
       isAuthenticated = false;
     }
   }

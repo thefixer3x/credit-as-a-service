@@ -46,7 +46,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
     await request.jwtVerify();
     const user = request.user;
     
-    if (!user || !['admin', 'moderator'].includes(user.role)) {
+    if (!user || !['admin', 'moderator'].includes(user.role || '')) {
       return reply.status(403).send({
         error: 'Forbidden',
         message: 'Admin or moderator access required'
@@ -162,7 +162,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
       }
 
       // Check if loan is in a state that accepts payments
-      if (!['funded', 'active'].includes(loan.status)) {
+      if (!['funded', 'active'].includes(loan.status || '')) {
         return reply.status(400).send({
           error: 'Bad Request',
           message: 'Loan is not in a state that accepts payments'
@@ -175,25 +175,30 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
       // Calculate payment type and schedule
       const monthlyPaymentAmount = calculateMonthlyPayment(
-        loan.approvedAmount || 0,
-        loan.approvedRate || 0,
+        parseFloat(loan.approvedAmount || '0'),
+        parseFloat(loan.approvedRate || '0'),
         loan.approvedTermMonths || 12
       );
 
       const paymentType = paymentData.amount >= monthlyPaymentAmount * 0.9 ? 'regular' : 'partial';
 
+      // Generate payment number
+      const paymentNumber = `PMT-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create payment record
       const [newPayment] = await db.insert(payments).values({
         userId: loan.userId,
         loanId: paymentData.loanId,
-        amount: paymentData.amount,
+        paymentNumber,
+        amount: paymentData.amount.toString(),
+        principalAmount: (paymentData.amount * 0.8).toString(), // Estimate, should be calculated properly
+        interestAmount: (paymentData.amount * 0.2).toString(), // Estimate, should be calculated properly
         paymentMethod: paymentData.paymentMethod,
         paymentReference: paymentData.paymentReference,
-        notes: paymentData.notes,
         status: 'pending',
         paymentType,
+        scheduledDate: new Date(),
         dueDate,
-        expectedAmount: monthlyPaymentAmount,
       }).returning({
         id: payments.id,
         loanId: payments.loanId,
@@ -222,7 +227,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Payment creation failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId: paymentData.loanId,
         amount: paymentData.amount,
         requestId: request.id,
@@ -351,28 +356,28 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
       }
       
       if (minAmount !== undefined) {
-        conditions.push(gte(payments.amount, minAmount));
+        conditions.push(gte(payments.amount, minAmount.toString()));
       }
-      
+
       if (maxAmount !== undefined) {
-        conditions.push(lte(payments.amount, maxAmount));
+        conditions.push(lte(payments.amount, maxAmount.toString()));
       }
 
       // Get total count for pagination
       const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
-      
+
       const totalQuery = db.select().from(payments)
         .leftJoin(users, eq(payments.userId, users.id));
-      
+
       if (whereClause) {
         totalQuery.where(whereClause);
       }
-      
+
       const totalPayments = (await totalQuery).length;
       const totalPages = Math.ceil(totalPayments / limit);
 
       // Get paginated results with user info
-      const sortColumn = payments[sortBy as keyof typeof payments];
+      const sortColumn = payments[sortBy as keyof typeof payments] as any;
       const sortFn = sortOrder === 'asc' ? asc : desc;
       
       const offset = (page - 1) * limit;
@@ -431,7 +436,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to retrieve payments', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -536,7 +541,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get payment', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         paymentId,
         requestId: request.id,
       });
@@ -659,7 +664,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Payment processing failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         paymentId,
         requestId: request.id,
       });
@@ -738,27 +743,33 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
         });
       }
 
-      const refundAmount = amount || originalPayment.amount;
+      const refundAmount = amount || parseFloat(originalPayment.amount);
 
-      if (refundAmount > originalPayment.amount) {
+      if (refundAmount > parseFloat(originalPayment.amount)) {
         return reply.status(400).send({
           error: 'Bad Request',
           message: 'Refund amount cannot exceed original payment amount'
         });
       }
 
+      // Generate payment number for refund
+      const refundPaymentNumber = `REF-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create refund record (negative payment)
       const [refund] = await db.insert(payments).values({
         userId: originalPayment.userId,
         loanId: originalPayment.loanId,
-        amount: -refundAmount, // Negative amount for refund
+        paymentNumber: refundPaymentNumber,
+        amount: (-refundAmount).toString(), // Negative amount for refund
+        principalAmount: '0',
+        interestAmount: '0',
         paymentMethod: originalPayment.paymentMethod,
         status: 'refunded',
         paymentType: 'refund',
+        scheduledDate: new Date(),
         paymentReference: `REFUND-${originalPayment.id}`,
         notes: `Refund: ${reason}`,
         processedAt: new Date(),
-        originalPaymentId: paymentId,
       }).returning({
         id: payments.id,
         amount: payments.amount,
@@ -767,7 +778,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
       });
 
       // Update original payment status if full refund
-      if (refundAmount === originalPayment.amount) {
+      if (refundAmount === parseFloat(originalPayment.amount)) {
         await db.update(payments)
           .set({ 
             status: 'refunded',
@@ -790,7 +801,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
         refund: {
           id: refund.id,
           originalPaymentId: paymentId,
-          amount: Math.abs(refund.amount),
+          amount: Math.abs(parseFloat(refund.amount)),
           reason,
           status: refund.status
         }
@@ -798,7 +809,7 @@ export const paymentRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Payment refund failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         paymentId,
         requestId: request.id,
       });

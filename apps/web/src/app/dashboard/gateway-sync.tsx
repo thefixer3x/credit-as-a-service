@@ -212,10 +212,10 @@ const GatewaySyncDashboard: React.FC = () => {
   });
 
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  
+
   const uniqueCategories = Array.from(new Set(creditServiceAdapters.map(a => a.category)));
   const categories = ['all', ...uniqueCategories];
-  
+
   const filteredAdapters = selectedCategory === 'all' 
     ? creditServiceAdapters 
     : creditServiceAdapters.filter(a => a.category === selectedCategory);

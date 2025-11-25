@@ -43,7 +43,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
     await request.jwtVerify();
     const user = request.user;
     
-    if (!user || !['admin', 'moderator'].includes(user.role)) {
+    if (!user || !['admin', 'moderator'].includes(user.role || '')) {
       return reply.status(403).send({
         error: 'Forbidden',
         message: 'Admin or moderator access required'
@@ -183,21 +183,27 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       // Ensure rate is within bounds
       estimatedRate = Math.max(3.0, Math.min(50.0, estimatedRate));
 
+      // Generate application number
+      const applicationNumber = `LA-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+
       // Create loan application record
       const [newApplication] = await db.insert(loanApplications).values({
         userId: user.userId,
-        amount: applicationData.amount,
+        applicationNumber,
+        loanType: applicationData.purpose,
+        requestedAmount: applicationData.amount.toString(),
+        amount: applicationData.amount.toString(),
         purpose: applicationData.purpose,
         termMonths: applicationData.termMonths,
-        annualIncome: applicationData.annualIncome,
+        annualIncome: applicationData.annualIncome ? applicationData.annualIncome.toString() : undefined,
         employmentStatus: applicationData.employmentStatus,
-        monthlyDebtPayments: applicationData.monthlyDebtPayments,
-        collateralValue: applicationData.collateralValue,
+        monthlyDebtPayments: applicationData.monthlyDebtPayments ? applicationData.monthlyDebtPayments.toString() : undefined,
+        collateralValue: applicationData.collateralValue ? applicationData.collateralValue.toString() : undefined,
         collateralType: applicationData.collateralType,
         description: applicationData.description,
         creditScore,
-        debtToIncomeRatio,
-        estimatedRate,
+        debtToIncomeRatio: debtToIncomeRatio.toString(),
+        estimatedRate: estimatedRate.toString(),
         status: 'pending',
       }).returning({
         id: loanApplications.id,
@@ -227,7 +233,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Loan application submission failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId: user.userId,
         amount: applicationData.amount,
         requestId: request.id,
@@ -339,11 +345,11 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       }
       
       if (minAmount !== undefined) {
-        conditions.push(gte(loanApplications.amount, minAmount));
+        conditions.push(gte(loanApplications.amount, minAmount.toString()));
       }
-      
+
       if (maxAmount !== undefined) {
-        conditions.push(lte(loanApplications.amount, maxAmount));
+        conditions.push(lte(loanApplications.amount, maxAmount.toString()));
       }
 
       // Get total count for pagination
@@ -360,11 +366,11 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       const totalPages = Math.ceil(totalLoans / limit);
 
       // Get paginated results with user info
-      const sortColumn = loanApplications[sortBy as keyof typeof loanApplications];
+      const sortColumn = loanApplications[sortBy as keyof typeof loanApplications] as any;
       const sortFn = sortOrder === 'asc' ? asc : desc;
-      
+
       const offset = (page - 1) * limit;
-      
+
       const query = db.select({
         id: loanApplications.id,
         userId: loanApplications.userId,
@@ -422,7 +428,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to retrieve loans', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -532,7 +538,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get loan', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId,
         requestId: request.id,
       });
@@ -616,8 +622,8 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
         .set({
           status: updateData.status,
           adminNotes: updateData.adminNotes,
-          approvedAmount: updateData.approvedAmount,
-          approvedRate: updateData.approvedRate,
+          approvedAmount: updateData.approvedAmount ? updateData.approvedAmount.toString() : undefined,
+          approvedRate: updateData.approvedRate ? updateData.approvedRate.toString() : undefined,
           approvedTermMonths: updateData.approvedTermMonths,
           updatedAt: new Date(),
         })
@@ -647,7 +653,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Loan status update failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId,
         requestId: request.id,
       });
@@ -700,7 +706,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
       }
 
       // Prevent deletion of active loans
-      if (['funded', 'active'].includes(loan.status)) {
+      if (['funded', 'active'].includes(loan.status || '')) {
         return reply.status(400).send({
           error: 'Bad Request',
           message: 'Cannot delete active loans'
@@ -724,7 +730,7 @@ export const loanRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Loan deletion failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         loanId,
         requestId: request.id,
       });

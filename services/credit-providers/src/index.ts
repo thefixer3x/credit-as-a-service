@@ -12,7 +12,7 @@ import { LeadRepository } from './repositories/lead-repository';
 import { AnalyticsRepository } from './repositories/analytics-repository';
 import { EventPublisher } from '@caas/common';
 
-const logger = new Logger('credit-providers-service');
+const logger = new Logger({ serviceName: 'credit-providers-service' });
 
 async function startServer() {
   try {
@@ -68,18 +68,18 @@ async function startServer() {
     });
 
     // Register plugins
-    await server.register(import('fastify-cors'), {
-      origin: process.env.NODE_ENV === 'production' 
+    await server.register(import('@fastify/cors'), {
+      origin: process.env.NODE_ENV === 'production'
         ? ['https://admin.caas.platform.com', 'https://providers.caas.platform.com']
         : true,
       credentials: true,
     });
 
-    await server.register(import('fastify-jwt'), {
+    await server.register(import('@fastify/jwt'), {
       secret: process.env.JWT_SECRET || 'your-secret-key',
     });
 
-    await server.register(import('fastify-swagger'), {
+    await server.register(import('@fastify/swagger'), {
       swagger: {
         info: {
           title: 'Credit Providers API',
@@ -102,7 +102,7 @@ async function startServer() {
       },
     });
 
-    await server.register(import('fastify-swagger-ui'), {
+    await server.register(import('@fastify/swagger-ui'), {
       routePrefix: '/documentation',
       uiConfig: {
         docExpansion: 'list',

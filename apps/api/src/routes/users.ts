@@ -159,12 +159,12 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
       const totalPages = Math.ceil(totalUsers / limit);
 
       // Get paginated results
-      const sortColumn = users[sortBy as keyof typeof users];
+      const sortColumn = users[sortBy as keyof typeof users] as any;
       const sortFn = sortOrder === 'asc' ? asc : desc;
-      
+
       const offset = (page - 1) * limit;
-      
-      const query = conditions.length > 0 
+
+      const query = conditions.length > 0
         ? db.select({
             id: users.id,
             email: users.email,
@@ -216,7 +216,7 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to retrieve users', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         requestId: request.id,
       });
 
@@ -296,7 +296,7 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Failed to get user', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId,
         requestId: request.id,
       });
@@ -400,7 +400,7 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('User creation failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         email: validatedData.email,
         requestId: request.id,
       });
@@ -530,7 +530,7 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('User update failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId,
         requestId: request.id,
       });
@@ -613,7 +613,7 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('Password update failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId,
         requestId: request.id,
       });
@@ -689,7 +689,7 @@ export const userRoutes: FastifyPluginAsync = async function (fastify) {
 
     } catch (error) {
       logger.error('User deletion failed', {
-        error: error.message,
+        error: error instanceof Error ? error.message : String(error),
         userId,
         requestId: request.id,
       });

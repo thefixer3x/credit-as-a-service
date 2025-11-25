@@ -9,6 +9,13 @@ import {
   SdkEvents 
 } from '../types/index.js';
 
+interface ExtendedAxiosRequestConfig extends AxiosRequestConfig {
+  metadata?: {
+    requestStartTime: number;
+    startTime: number;
+  };
+}
+
 export class HttpClient extends EventEmitter<SdkEvents> {
   private client: AxiosInstance;
   private requestCount: number = 0;
@@ -170,8 +177,8 @@ export class HttpClient extends EventEmitter<SdkEvents> {
     );
   }
 
-  async request<T = any>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    (config as any).metadata = { requestStartTime: Date.now(), startTime: Date.now() };
+  async request<T = any>(config: ExtendedAxiosRequestConfig): Promise<ApiResponse<T>> {
+    config.metadata = { requestStartTime: Date.now(), startTime: Date.now() };
     
     try {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.request(config);
@@ -195,13 +202,13 @@ export class HttpClient extends EventEmitter<SdkEvents> {
     );
   }
 
-  private async retryRequest<T>(config: AxiosRequestConfig): Promise<ApiResponse<T>> {
-    const currentRetryCount = ((config as any).retryCount || 0) + 1;
-    const delay = this.config.retryDelay * Math.pow(2, currentRetryCount - 1); // Exponential backoff
-    
+  private async retryRequest<T>(config: ExtendedAxiosRequestConfig): Promise<ApiResponse<T>> {
+    const retryCount = ((config as any).retryCount || 0) + 1;
+    const delay = this.config.retryDelay * Math.pow(2, retryCount - 1); // Exponential backoff
+
     await new Promise(resolve => setTimeout(resolve, delay));
-    
-    (config as any).retryCount = currentRetryCount;
+
+    (config as any).retryCount = retryCount;
     return this.request<T>(config);
   }
 

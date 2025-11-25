@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Risk rating indicator colors */
+.risk-indicator-low {
+  @apply bg-green-500;
+}
+
+.risk-indicator-medium {
+  @apply bg-yellow-500;
+}
+
+.risk-indicator-high {
+  @apply bg-red-500;
+}
