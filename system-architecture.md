@@ -14,6 +14,7 @@ The Credit-as-a-Service Platform adopts a microservices architecture pattern wit
 4. **API-First Design**: All services expose well-defined APIs
 5. **Cloud-Native**: Built for containerized, distributed environments
 6. **Security by Design**: Zero-trust architecture with defense in depth
+7. **Contract Standardization**: Shared endpoint and event contracts across services (`docs/api/service-standards.md`, `docs/api/event-contracts.md`)
 
 ## Microservices Layout
 
@@ -26,7 +27,7 @@ graph TB
     end
     
     subgraph "API Gateway Layer"
-        KONG[Kong API Gateway]
+        GATEWAY[Fastify API Gateway]
         AUTH_PROXY[Auth Proxy]
         RATE_LIMIT[Rate Limiter]
         API_CACHE[API Cache]
@@ -66,11 +67,11 @@ graph TB
         KYC_PROVIDER[KYC Providers]
     end
     
-    WEB --> KONG
-    MOBILE --> KONG
-    API_CLIENT --> KONG
+    WEB --> GATEWAY
+    MOBILE --> GATEWAY
+    API_CLIENT --> GATEWAY
     
-    KONG --> AUTH_PROXY
+    GATEWAY --> AUTH_PROXY
     AUTH_PROXY --> RATE_LIMIT
     RATE_LIMIT --> API_CACHE
     

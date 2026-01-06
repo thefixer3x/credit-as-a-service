@@ -4,13 +4,22 @@
 
 This document provides detailed specifications for each microservice in the Credit-as-a-Service Platform. Each service is designed following Domain-Driven Design (DDD) principles with clear boundaries, responsibilities, and interfaces.
 
+## ✅ Hybrid Implementation Standards (Fastify + Contracts)
+
+Current implementation standardizes on Fastify for HTTP services while aligning APIs and events across the platform. This keeps the codebase consistent today while preserving the option to introduce an edge gateway later.
+
+- **HTTP runtime**: Fastify across services in `services/` and `apps/api`.
+- **Endpoint standards**: `docs/api/service-standards.md`
+- **Event contracts**: `docs/api/event-contracts.md` (schemas live in `@caas/types`)
+- **Edge gateway**: optional (Kong/Express Gateway) for perimeter concerns; not required for internal service-to-service traffic.
+
 ## 🔐 API Gateway Service
 
 ### Purpose
 Central entry point for all client requests, handling authentication, authorization, rate limiting, and request routing.
 
 ### Technology Stack
-- **Framework**: Kong Gateway / Express Gateway
+- **Framework**: Fastify (current implementation), optional Kong/Express Gateway at the edge
 - **Language**: TypeScript (Node.js)
 - **Authentication**: OAuth 2.0, OpenID Connect
 - **Rate Limiting**: Redis-based token bucket

@@ -5,4 +5,5 @@ export * from './compliance.js';
 export * from './blockchain.js';
 export * from './api.js';
 export * from './common.js';
+export * from './events.js';
 export * from './contracts/index.js';
