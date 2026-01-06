@@ -53,6 +53,12 @@ export const environmentSchema = z.object({
   REPAYMENT_SERVICE_PORT: z.coerce.number().optional(),
   OFFERS_SERVICE_PORT: z.coerce.number().optional(),
   UNDERWRITING_SERVICE_PORT: z.coerce.number().optional(),
+  KAFKA_SERVICE_PORT: z.coerce.number().optional(),
+
+  // Kafka
+  KAFKA_BROKER: z.string().optional(),
+  KAFKA_CLIENT_ID: z.string().optional(),
+  KAFKA_GROUP_ID: z.string().optional(),
 
   // Service URLs
   AUTH_SERVICE_URL: z.string().url().optional(),

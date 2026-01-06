@@ -31,7 +31,8 @@
       "mcp__hostinger-api__DNS_updateZoneRecordsV1",
       "Bash(curl:*)",
       "Bash(ssh:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(vercel inspect:*)"
     ],
     "deny": []
   }

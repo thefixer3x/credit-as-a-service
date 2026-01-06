@@ -34,7 +34,7 @@ export function createKafkaRoutes(producer: EventProducer, eventRegistry: EventR
     } catch (error) {
       res.status(400).json({
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
@@ -58,7 +58,7 @@ export function createKafkaRoutes(producer: EventProducer, eventRegistry: EventR
     } catch (error) {
       res.status(400).json({
         success: false,
-        error: error.message
+        error: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });
