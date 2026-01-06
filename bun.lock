@@ -872,7 +872,6 @@
         "@caas/database": "workspace:*",
         "@caas/sme-integration": "workspace:*",
         "@caas/types": "workspace:*",
-        "@caas/underwriting": "workspace:*",
         "@fastify/cors": "^8.4.0",
         "@fastify/helmet": "^11.1.0",
         "drizzle-orm": "^0.29.0",

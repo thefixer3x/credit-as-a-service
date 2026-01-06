@@ -28,7 +28,7 @@ const env = validateEnv();
 
 export class RepaymentEngine {
   private cache: CacheService;
-  private settings: RepaymentSettings;
+  private settings!: RepaymentSettings;
   private cronJobs: Map<string, any> = new Map();
 
   constructor(cache: CacheService) {

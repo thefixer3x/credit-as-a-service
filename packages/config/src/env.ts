@@ -50,6 +50,9 @@ export const environmentSchema = z.object({
   AUTH_SERVICE_PORT: z.coerce.number().optional(),
   API_GATEWAY_PORT: z.coerce.number().optional(),
   DISBURSEMENT_SERVICE_PORT: z.coerce.number().optional(),
+  REPAYMENT_SERVICE_PORT: z.coerce.number().optional(),
+  OFFERS_SERVICE_PORT: z.coerce.number().optional(),
+  UNDERWRITING_SERVICE_PORT: z.coerce.number().optional(),
 
   // Service URLs
   AUTH_SERVICE_URL: z.string().url().optional(),

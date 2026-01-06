@@ -156,7 +156,7 @@ export interface PaymentPlan {
     feeWaivers?: string[];
     additionalTerms?: Record<string, any>;
   };
-  approvedTerms?: typeof PaymentPlan.prototype.proposedTerms;
+  approvedTerms?: PaymentPlan['proposedTerms'];
   newScheduleId?: string;
   effectiveDate?: Date;
   approvedBy?: string;
