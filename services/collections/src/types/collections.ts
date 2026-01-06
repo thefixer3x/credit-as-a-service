@@ -66,7 +66,7 @@ export interface HardshipPlan {
     feeWaivers?: string[];
     specialConditions?: string[];
   };
-  approvedTerms?: typeof HardshipPlan.prototype.proposedTerms;
+  approvedTerms?: HardshipPlan['proposedTerms'];
   startDate?: Date;
   endDate?: Date;
   effectiveDate?: Date;

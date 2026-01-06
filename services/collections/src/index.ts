@@ -25,7 +25,7 @@ async function startServer() {
     const { cacheService } = await initializeCache({
       redis: {
         host: env.REDIS_HOST,
-        port: parseInt(env.REDIS_PORT || '6379'),
+        port: String(env.REDIS_PORT),
         password: env.REDIS_PASSWORD,
         keyPrefix: 'collections:'
       }

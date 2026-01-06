@@ -24,7 +24,7 @@ const env = validateEnv();
 
 export class CollectionsEngine {
   private cache: CacheService;
-  private settings: CollectionSettings;
+  private settings!: CollectionSettings;
   private cronJobs: Map<string, any> = new Map();
 
   constructor(cache: CacheService) {
@@ -566,7 +566,7 @@ export class CollectionsEngine {
 
   private async addActionToCase(caseId: string, actionId: string): Promise<void> {
     const actionsKey = `case:${caseId}:actions`;
-    await this.cache.listPush(actionsKey, actionId);
+    await this.cache.lpush(actionsKey, [actionId]);
   }
 
   private async processActionOutcome(action: CollectionAction): Promise<void> {
@@ -604,12 +604,12 @@ export class CollectionsEngine {
 
   private async addHardshipPlanToCase(caseId: string, planId: string): Promise<void> {
     const plansKey = `case:${caseId}:hardshipplans`;
-    await this.cache.listPush(plansKey, planId);
+    await this.cache.lpush(plansKey, [planId]);
   }
 
   private async addPromiseToCase(caseId: string, promiseId: string): Promise<void> {
     const promisesKey = `case:${caseId}:promises`;
-    await this.cache.listPush(promisesKey, promiseId);
+    await this.cache.lpush(promisesKey, [promiseId]);
   }
 
   private async calculatePromiseKeeperScore(userId: string): Promise<number> {

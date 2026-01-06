@@ -54,6 +54,15 @@ export const environmentSchema = z.object({
   OFFERS_SERVICE_PORT: z.coerce.number().optional(),
   UNDERWRITING_SERVICE_PORT: z.coerce.number().optional(),
   KAFKA_SERVICE_PORT: z.coerce.number().optional(),
+  COMPLIANCE_SERVICE_PORT: z.coerce.number().optional(),
+  GRAPHQL_SERVICE_PORT: z.coerce.number().optional(),
+  RISK_SERVICE_PORT: z.coerce.number().optional(),
+  NOTIFICATIONS_SERVICE_PORT: z.coerce.number().optional(),
+  LEDGER_SERVICE_PORT: z.coerce.number().optional(),
+  COLLECTIONS_SERVICE_PORT: z.coerce.number().optional(),
+  ONBOARDING_SERVICE_PORT: z.coerce.number().optional(),
+  ANALYTICS_SERVICE_PORT: z.coerce.number().optional(),
+  CREDIT_PROVIDERS_SERVICE_PORT: z.coerce.number().optional(),
 
   // Kafka
   KAFKA_BROKER: z.string().optional(),

@@ -1,8 +1,8 @@
-import { FastifyRequest } from 'fastify';
+import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 
 export interface GraphQLContext {
-  request: FastifyRequest;
+  req: Request;
   userId?: string;
   userRole?: string;
   isAuthenticated: boolean;
@@ -15,9 +15,9 @@ interface JWTPayload {
   exp?: number;
 }
 
-export async function context({ request }: { request: FastifyRequest }): Promise<GraphQLContext> {
+export async function context({ req }: { req: Request }): Promise<GraphQLContext> {
   // Extract user information from request headers or JWT token
-  const authHeader = request.headers.authorization;
+  const authHeader = req.headers.authorization;
   let userId: string | undefined;
   let userRole: string | undefined;
   let isAuthenticated = false;
@@ -44,7 +44,7 @@ export async function context({ request }: { request: FastifyRequest }): Promise
   }
 
   return {
-    request,
+    req,
     userId,
     userRole,
     isAuthenticated,

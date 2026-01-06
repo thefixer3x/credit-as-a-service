@@ -5,7 +5,7 @@ import pino from 'pino';
 const logger = pino({ name: 'graphql-resolvers' });
 
 // Service URLs (in production, these would come from service discovery)
-const SERVICE_URLS = {
+const SERVICE_URLS: Record<string, string> = {
   auth: process.env.AUTH_SERVICE_URL || 'http://localhost:8001',
   risk: process.env.RISK_SERVICE_URL || 'http://localhost:3005',
   compliance: process.env.COMPLIANCE_SERVICE_URL || 'http://localhost:3006',

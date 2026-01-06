@@ -22,7 +22,7 @@ const env = validateEnv();
 
 export class LedgerEngine {
   private cache: CacheService;
-  private settings: LedgerSettings;
+  private settings!: LedgerSettings;
 
   constructor(cache: CacheService) {
     this.cache = cache;

@@ -1,9 +1,11 @@
-import fastify from 'fastify';
-import cors from '@fastify/cors';
-import helmet from '@fastify/helmet';
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import compression from 'compression';
 import { ApolloServer } from '@apollo/server';
-import { fastifyApollo } from '@fastify/apollo';
+import { expressMiddleware } from '@apollo/server/express4';
 import pino from 'pino';
+import pinoHttp from 'pino-http';
 
 import { validateEnv } from '@caas/config';
 import { errorHandler, notFoundHandler } from '@caas/common';
@@ -16,86 +18,68 @@ const env = validateEnv();
 
 async function startServer() {
   try {
-    const app = fastify({
-      logger: logger,
-      trustProxy: true,
-    });
-
+    const app = express();
     const PORT = env.GRAPHQL_SERVICE_PORT || 3009;
 
     // Create Apollo Server
     const apolloServer = new ApolloServer({
       typeDefs,
       resolvers,
-      plugins: [
-        // Add Apollo Studio landing page in development
-        process.env.NODE_ENV === 'development' 
-          ? require('@apollo/server-plugin-landing-page-local-default').default()
-          : undefined
-      ].filter(Boolean),
       introspection: process.env.NODE_ENV === 'development',
     });
 
     // Start Apollo Server
     await apolloServer.start();
 
-    // Register plugins
-    await app.register(cors, {
+    // Middleware
+    app.use(helmet());
+    app.use(cors({
       origin: env.ALLOWED_ORIGINS?.split(',') || ['http://localhost:3000'],
       credentials: true,
-    });
-
-    await app.register(helmet);
-
-    // Register Apollo GraphQL
-    await app.register(fastifyApollo(apolloServer), {
-      context,
-      path: '/graphql',
-    });
+    }));
+    app.use(compression());
+    app.use(express.json({ limit: '10mb' }));
+    app.use(pinoHttp({ logger }));
 
     // Health check endpoint
-    app.get('/health', async (request, reply) => {
-      return {
+    app.get('/health', (req, res) => {
+      res.json({
         service: 'graphql-gateway',
         status: 'healthy',
         timestamp: new Date().toISOString(),
         version: process.env.npm_package_version || '1.0.0',
         uptime: process.uptime(),
         graphqlEndpoint: '/graphql',
-      };
+      });
     });
 
-    // GraphQL Playground endpoint (development only)
-    if (process.env.NODE_ENV === 'development') {
-      app.get('/playground', async (request, reply) => {
-        return reply.redirect('/graphql');
-      });
-    }
+    // GraphQL endpoint
+    app.use('/graphql', expressMiddleware(apolloServer, {
+      context,
+    }));
 
     // Error handling
-    app.setErrorHandler(errorHandler);
-    app.setNotFoundHandler(notFoundHandler);
+    app.use(notFoundHandler);
+    app.use(errorHandler);
 
     // Start server
-    await app.listen({ port: PORT, host: '0.0.0.0' });
-    logger.info({ 
-      port: PORT, 
-      graphqlEndpoint: `http://localhost:${PORT}/graphql`,
-      playground: process.env.NODE_ENV === 'development' ? `http://localhost:${PORT}/playground` : 'disabled'
-    }, 'GraphQL Gateway started');
+    app.listen(PORT, () => {
+      logger.info({
+        port: PORT,
+        graphqlEndpoint: `http://localhost:${PORT}/graphql`,
+      }, 'GraphQL Gateway started');
+    });
 
     // Graceful shutdown
     process.on('SIGINT', async () => {
       logger.info('Received SIGINT, shutting down gracefully');
       await apolloServer.stop();
-      await app.close();
       process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
       logger.info('Received SIGTERM, shutting down gracefully');
       await apolloServer.stop();
-      await app.close();
       process.exit(0);
     });
 

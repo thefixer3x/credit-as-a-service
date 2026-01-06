@@ -7,7 +7,6 @@ import swaggerUi from '@fastify/swagger-ui';
 import pino from 'pino';
 
 import { validateEnv } from '@caas/config';
-import { errorHandler, notFoundHandler } from '@caas/common';
 import { RiskEngine } from './services/risk-engine.js';
 import { RiskController } from './controllers/risk-controller.js';
 import { createRiskRoutes } from './routes/risk-routes.js';
@@ -18,7 +17,7 @@ const env = validateEnv();
 async function startServer() {
   try {
     const app = fastify({
-      logger: logger,
+      logger: true,
       trustProxy: true,
     });
 
@@ -80,8 +79,20 @@ async function startServer() {
     await app.register(createRiskRoutes(controller), { prefix: '/api/v1/risk' });
 
     // Error handling
-    app.setErrorHandler(errorHandler);
-    app.setNotFoundHandler(notFoundHandler);
+    app.setErrorHandler((error, request, reply) => {
+      logger.error({ error, requestId: request.id }, 'Request error');
+      reply.status(error.statusCode || 500).send({
+        success: false,
+        error: error.message || 'Internal server error',
+      });
+    });
+
+    app.setNotFoundHandler((request, reply) => {
+      reply.status(404).send({
+        success: false,
+        error: 'Route not found',
+      });
+    });
 
     // Start server
     await app.listen({ port: PORT, host: '0.0.0.0' });
