@@ -192,7 +192,9 @@ export class MarginCalculationService {
   }> {
     try {
       const marginConfig = await this.adminProviderRepository.findMarginConfig(providerId);
-      const performance = await this.adminProviderRepository.getProviderPerformance(providerId);
+      const performanceResult = await this.adminProviderRepository.getProviderPerformance(providerId);
+      // Convert null to undefined for optional parameter compatibility
+      const performance = performanceResult ?? undefined;
 
       if (!marginConfig) {
         throw new MarginConfigurationError(
@@ -268,7 +270,9 @@ export class MarginCalculationService {
   }> {
     try {
       const currentConfig = await this.adminProviderRepository.findMarginConfig(providerId);
-      const performance = await this.adminProviderRepository.getProviderPerformance(providerId);
+      const performanceResult = await this.adminProviderRepository.getProviderPerformance(providerId);
+      // Convert null to undefined for optional parameter compatibility
+      const performance = performanceResult ?? undefined;
       const marketData = await this.getMarketComparisonData(providerId);
 
       if (!currentConfig) {
@@ -499,7 +503,7 @@ export class MarginCalculationService {
 
   private analyzeMarginPerformance(
     currentConfig: MarginConfiguration,
-    performance: ProviderPerformance,
+    performance: ProviderPerformance | undefined,
     marketData: any
   ): any {
     return {
@@ -531,7 +535,7 @@ export class MarginCalculationService {
   private async calculateOptimizationImpact(
     currentConfig: MarginConfiguration,
     recommendedConfig: MarginConfiguration,
-    performance: ProviderPerformance
+    _performance: ProviderPerformance | undefined
   ): Promise<any> {
     const currentMargin = currentConfig.marginStructure.basePercentage;
     const recommendedMargin = recommendedConfig.marginStructure.basePercentage;

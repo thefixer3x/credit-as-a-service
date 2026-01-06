@@ -1,6 +1,6 @@
 # Credit-as-a-Service Platform - Directory Guide
 
-## 📁 Project Structure
+## Project Structure
 
 ### Root Directory
 ```
@@ -8,218 +8,225 @@ credit-as-a-service-platform/
 ├── apps/                          # Application frontends
 ├── services/                      # Backend microservices
 ├── packages/                      # Shared packages
-├── docker/                        # Docker configurations
+├── libs/                          # Shared libraries
+├── tests/                         # Test suites
 ├── docs/                          # Documentation
 ├── package.json                   # Root package.json (workspace config)
-├── bun.lockb                     # Bun lock file
-├── tsconfig.json                 # TypeScript config
-├── DIRECTORY_GUIDE.md            # This file
-└── CLAUDE.md                     # Development notes and session context
+├── bun.lock                       # Bun lock file
+├── tsconfig.json                  # TypeScript config
+├── turbo.json                     # Turborepo configuration
+├── DIRECTORY_GUIDE.md             # This file
+├── CLAUDE.md                      # Development notes and session context
+└── build_guide.md                 # Master blueprint document
 ```
 
-## 🖥️ Applications (`apps/`)
+## Applications (`apps/`)
 
 ### Web Dashboard (`apps/web/`)
+- **Package**: `@caas/web`
 - **Purpose**: Main customer-facing web application
 - **Tech Stack**: Next.js 14, TypeScript, Tailwind CSS
+- **Port**: 3000
 - **Key Features**:
   - User authentication & registration
-  - Loan application workflow
+  - Credit application workflow
   - Dashboard with real-time notifications
   - Payment management
-  - Document upload/management
 
-**Key Files:**
-- `src/app/` - Next.js app router pages
-- `src/components/` - React components
-- `src/lib/` - Utility functions and configurations
-- `src/app/dashboard/page-variant-2.tsx` - Enhanced dashboard with proper Badge variants
-
-### Admin Portal (`apps/admin/`)
-- **Purpose**: Administrative interface for loan management
-- **Tech Stack**: React, TypeScript, Vite
+### Admin Console (`apps/admin/`)
+- **Package**: `@caas/admin-console`
+- **Purpose**: Enterprise administrative interface
+- **Tech Stack**: Next.js 14, TypeScript
+- **Port**: 3001
 - **Key Features**:
   - Loan application review
   - User management
   - Analytics dashboard
   - Risk assessment tools
 
-## 🔧 Backend Services (`services/`)
-
-### Core API (`services/api/`)
-- **Purpose**: Main API gateway and core business logic
-- **Tech Stack**: Fastify, TypeScript, Drizzle ORM
-- **Database**: PostgreSQL
+### Credit Provider Dashboard (`apps/credit-provider-dashboard/`)
+- **Package**: `@caas/credit-provider-dashboard`
+- **Purpose**: Dashboard for credit providers
+- **Tech Stack**: Next.js 14, TypeScript
+- **Port**: 3009
 - **Key Features**:
-  - RESTful API endpoints
-  - Authentication & authorization
-  - Loan processing logic
-  - User management
+  - Provider analytics
+  - Lead management
+  - Revenue tracking
 
-### Notifications Service (`services/notifications/`)
-- **Purpose**: Real-time notifications and communication
-- **Tech Stack**: Fastify, WebSocket, TypeScript
-- **Key Features**:
-  - WebSocket server (port 3010)
-  - Real-time notification delivery
-  - Email/SMS integration points
-  - Event-driven architecture
-  - Notification templates and channels
+### API App (`apps/api/`)
+- **Purpose**: API server application
+- **Tech Stack**: Fastify, TypeScript
 
-**Key Files:**
-- `src/realtime/websocket-server.ts` - WebSocket management and real-time communication
-- `src/services/notification-service.ts` - Core notification business logic
-- `src/server.ts` - Fastify server with WebSocket support
+### Admin Console (Legacy) (`apps/admin-console/`)
+- **Purpose**: Legacy admin console placeholder
 
-### Document Service (`services/documents/`)
-- **Purpose**: Document processing and storage
-- **Tech Stack**: Node.js, TypeScript
-- **Key Features**:
-  - File upload/download
-  - Document validation
-  - OCR processing
-  - Secure storage
+## Backend Services (`services/`)
 
-### Risk Assessment (`services/risk-assessment/`)
-- **Purpose**: Credit scoring and risk evaluation
-- **Tech Stack**: Python, FastAPI
-- **Key Features**:
-  - Credit score calculation
-  - Risk modeling
-  - ML-based assessments
-  - External data integration
+### Core Services
 
-### Payment Processing (`services/payments/`)
-- **Purpose**: Payment processing and financial transactions
-- **Tech Stack**: Node.js, TypeScript
-- **Key Features**:
-  - Payment gateway integration
-  - Transaction management
-  - Recurring payments
-  - Financial reporting
+| Service | Package | Purpose |
+|---------|---------|---------|
+| `api-gateway` | `@caas/api-gateway` | Main API gateway, routing, rate limiting |
+| `auth` | `@caas/auth` | OAuth2, JWT, session management |
+| `database` | `@caas/database` | Database schema, migrations |
 
-## 📦 Shared Packages (`packages/`)
+### Credit Processing Services
 
-### UI Kit (`packages/ui-kit/`)
-- **Purpose**: Reusable React component library
-- **Tech Stack**: React, TypeScript, Tailwind CSS, Storybook
-- **Key Components**:
-  - Button, Card, Badge, Progress
-  - NotificationCenter with real-time WebSocket integration
-  - Statistics cards and dashboard components
-  - 21st.dev integrated components
+| Service | Package | Purpose |
+|---------|---------|---------|
+| `underwriting` | `@caas/underwriting` | Risk scoring, credit assessment |
+| `offers` | `@caas/offers` | Match users to providers, pricing |
+| `disbursement` | `@caas/disbursement` | Payout orchestration |
+| `repayment` | `@caas/repayment-service` | Schedules, reminders, auto-debits |
+| `collections` | `@caas/collections` | Delinquency workflow |
+| `credit-providers` | `@caas/credit-providers` | Provider integrations |
 
-**Key Files:**
-- `src/components/ui/` - Base UI components
-- `src/components/ui/notification-center.tsx` - Real-time notification UI
-- `src/hooks/useNotifications.tsx` - WebSocket notification hook
-- `src/index.ts` - Component exports
+### Platform Services
 
-### Common (`packages/common/`)
-- **Purpose**: Shared utilities, types, and configurations
-- **Tech Stack**: TypeScript
-- **Key Features**:
-  - TypeScript type definitions
-  - Validation schemas (Zod)
-  - Utility functions
-  - Error handling middleware
+| Service | Package | Purpose |
+|---------|---------|---------|
+| `notifications` | `@caas/notifications` | Email/SMS/Push/WebSocket notifications |
+| `ledger` | `@caas/ledger` | Double-entry ledger, GL postings |
+| `analytics-service` | `@caas/analytics-service` | BI, dashboards, cohort analysis |
+| `compliance-service` | `@caas/compliance-service` | Reg rules, screening, consent |
+| `risk-service` | `@caas/risk-service` | Risk modeling, assessments |
+| `monitoring` | `@caas/monitoring-service` | Health checks, metrics |
+| `onboarding` | `@caas/onboarding` | KYC/KYB flows |
 
-**Key Files:**
-- `src/types/` - Shared TypeScript types
-- `src/middleware.ts` - Error handling and common middleware
-- `src/utils/` - Utility functions
+### Integration Services
 
-### Database (`packages/database/`)
-- **Purpose**: Database schema and migrations
-- **Tech Stack**: Drizzle ORM, PostgreSQL
-- **Key Features**:
-  - Database schema definitions
-  - Migration scripts
-  - Seed data
-  - Query utilities
+| Service | Package | Purpose |
+|---------|---------|---------|
+| `sme-integration` | `@caas/sme-integration` | SME platform integration |
+| `graphql-gateway` | `@caas/graphql-gateway` | GraphQL API layer |
+| `kafka-service` | `@caas/kafka-service` | Message queue service |
+| `provider-service` | `@caas/provider-service` | Provider management |
+| `admin-provider-management` | `@caas/admin-provider-management` | Admin provider workflows |
+| `blockchain-orchestration` | `@caas/blockchain-orchestration` | Smart contract integration |
 
-## 🐳 Infrastructure (`docker/`)
+## Shared Packages (`packages/`)
 
-### Docker Configurations
-- `docker-compose.yml` - Local development environment
-- `Dockerfile.*` - Service-specific Docker builds
-- Development and production configurations
-- Database containers and networking
+| Package | Name | Purpose |
+|---------|------|---------|
+| `common` | `@caas/common` | Shared utilities, types, middleware |
+| `config` | `@caas/config` | Shared configs, env schemas (Zod) |
+| `types` | `@caas/types` | TypeScript type definitions |
+| `sdk` | `@caas/sdk` | TypeScript SDK for API clients |
+| `ui-kit` | `@caas/ui-kit` | React component library |
+| `contracts` | `@caas/contracts` | Smart contracts + ABIs |
+| `ui` | - | UI components (placeholder) |
+| `shared` | - | Shared code (placeholder) |
 
-## 📚 Documentation (`docs/`)
+## Libraries (`libs/`)
 
-### Project Documentation
-- API documentation
-- Component documentation (Storybook)
-- Development guides
-- Deployment instructions
+| Library | Name | Purpose |
+|---------|------|---------|
+| `cache` | `@caas/cache` | Redis caching utilities |
 
-## 🔧 Development Status
+## Testing (`tests/`)
 
-### ✅ Completed Features
-- **Phase 1**: Project structure and monorepo setup
-- **Phase 2**: Core authentication and user management
-- **Phase 3**: Loan application workflow
-- **Phase 4**: Dashboard and UI components
-- **Phase 5**: Error fixes and dependency resolution
-- **Real-time Notifications**: Complete WebSocket infrastructure
-- **UI Kit**: Badge, Progress, NotificationCenter components
-- **WebSocket Integration**: useNotifications hook and real-time updates
+```
+tests/
+├── unit/              # Unit tests (no database required)
+├── integration/       # Integration tests (requires PostgreSQL)
+├── e2e/               # End-to-end tests (Playwright)
+├── fixtures/          # Test fixtures
+├── mocks/             # Mock implementations
+├── setup/             # Test configuration
+└── vitest.config.ts   # Vitest configuration
+```
 
-### 🚧 In Progress
-- **Phase 6**: Advanced Features & Integration
-- **Event-driven Architecture**: Expanding notification system
-- **Testing**: Automated test suite development
+### Running Tests
+```bash
+# Unit tests only (no database needed)
+cd tests && bun run test:unit
 
-### 📋 Upcoming Tasks
-- Comprehensive logging and monitoring
-- Caching layer (Redis)
-- Performance optimization
-- Production deployment
+# Integration tests (requires PostgreSQL on port 5433)
+cd tests && bun run test:integration
 
-## 🔌 Key Integrations
+# E2E tests (requires full stack)
+cd tests && bun run test:e2e
+```
 
-### Real-time Communication
-- **WebSocket Server**: `ws://localhost:3010/ws`
-- **Channels**: loans, payments, system, admin
-- **Features**: Auto-reconnection, heartbeat monitoring, subscription management
-
-### External Services
-- **21st.dev**: UI component library integration
-- **Email/SMS**: Notification delivery channels
-- **Payment Gateways**: Financial transaction processing
-- **Document Storage**: Secure file management
-
-## 🛠️ Development Commands
+## Development Commands
 
 ```bash
 # Install dependencies
 bun install
 
-# Start development
+# Start development (all apps)
 bun run dev
 
 # Build all packages
 bun run build
 
+# Build specific package
+bun run build --filter=@caas/web
+
 # Run tests
 bun run test
 
-# Start notifications service
-bun run notifications:dev  # Port 3010 WebSocket server
+# Lint
+bun run lint
+
+# Type check
+bun run typecheck
 ```
 
-## 📱 Port Allocation
+## Port Allocation
 
-- **Web App**: 3000
-- **Admin Portal**: 3001
-- **Core API**: 3002
-- **Notifications Service**: 3003 (HTTP) / 3010 (WebSocket)
-- **Document Service**: 3004
-- **Risk Assessment**: 3005
-- **Payment Service**: 3006
-- **Database**: 5432
+| Service | HTTP Port | WebSocket Port |
+|---------|-----------|----------------|
+| Web App | 3000 | - |
+| Admin Console | 3001 | - |
+| Core API | 3002 | - |
+| Notifications | 3003 | 3010 |
+| Document Service | 3004 | - |
+| Risk Assessment | 3005 | - |
+| Payment Service | 3006 | - |
+| Credit Provider Dashboard | 3009 | - |
+| Database (PostgreSQL) | 5432 | - |
+| Test Database | 5433 | - |
+| Redis | 6379 | - |
+| Test Redis | 6380 | - |
+
+## Development Status
+
+### Completed
+- Project structure and monorepo setup
+- Core authentication and user management
+- Loan/credit application workflow
+- Dashboard and UI components
+- Real-time notifications infrastructure
+- Underwriting engine
+- Disbursement orchestration
+- Repayment service
+- Admin provider management service
+
+### In Progress
+- Vercel deployment stabilization
+- Integration testing infrastructure
+- Performance optimization
+
+### Upcoming
+- Mobile app (Expo/React Native)
+- WhatsApp bot integration
+- Smart contract deployment
+- Production monitoring
+
+## Integration Points
+
+### External Services
+- **Verification**: Prembly, SourceID (KYC/KYB)
+- **Payments**: Paystack (NG), Stripe/PayPal (Intl)
+- **Open Banking**: Mono, Okra, Plaid
+- **Messaging**: Twilio/WhatsApp Cloud API, SendGrid
+
+### Real-time Communication
+- **WebSocket Server**: `ws://localhost:3010/ws`
+- **Channels**: loans, payments, system, admin
 
 ---
 
-**Last Updated**: Phase 6 - Real-time notifications system completed with comprehensive WebSocket infrastructure and React integration.
+**Last Updated**: January 2026

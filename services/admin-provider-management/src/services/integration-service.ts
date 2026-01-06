@@ -43,12 +43,13 @@ export class IntegrationService {
       const projectId = uuidv4();
       
       // Update integration config with project ID and start date
+      // Note: projectId and startDate are runtime extensions not in the base schema
       await this.adminProviderRepository.updateIntegrationConfig(providerId, {
         ...integrationConfig,
         status: 'in_progress',
         projectId,
         startDate: new Date().toISOString()
-      });
+      } as IntegrationServiceConfig & { projectId: string; startDate: string });
 
       // Assign engineering team
       const assignedTeam = await this.assignIntegrationTeam(integrationConfig);
@@ -345,7 +346,7 @@ export class IntegrationService {
 
       return {
         deploymentId,
-        deploymentUrl: deploymentResult.deploymentUrl,
+        deploymentUrl: deploymentResult.deploymentUrl || '',
         rollbackUrl
       };
     } catch (error) {
@@ -379,8 +380,10 @@ export class IntegrationService {
       }
 
       // Perform health checks on all endpoints
+      // Note: endpoints is a runtime extension for provider API configs
+      const configWithEndpoints = integrationConfig as IntegrationServiceConfig & { endpoints?: Array<{ url: string; path: string }> };
       const endpointHealth = await Promise.all(
-        integrationConfig.endpoints?.map(async (endpoint: any) => {
+        configWithEndpoints.endpoints?.map(async (endpoint) => {
           return await this.checkEndpointHealth(providerId, endpoint);
         }) || []
       );
