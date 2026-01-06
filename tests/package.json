@@ -5,8 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "vitest",
-    "test:unit": "vitest run unit/",
-    "test:integration": "vitest run integration/",
+    "test:unit": "TEST_SUITE=unit vitest run unit/",
+    "test:integration": "TEST_SUITE=integration vitest run integration/",
     "test:e2e": "playwright test",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest --watch",

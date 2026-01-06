@@ -4,7 +4,8 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**", "out/**"]
+      "outputs": ["dist/**", ".next/**", "!.next/cache/**", "build/**", "out/**"],
+      "inputs": ["src/**", "package.json", "tsconfig.json"]
     },
     "dev": {
       "cache": false,
@@ -17,11 +18,28 @@
     },
     "lint": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": [],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "src/**/*.js",
+        "src/**/*.mjs",
+        "eslint.config.mjs",
+        ".eslintrc*",
+        "../../eslint.config.mjs",
+        "../../packages/config/src/eslint/**"
+      ]
     },
     "typecheck": {
       "dependsOn": ["^build"],
-      "outputs": []
+      "outputs": [],
+      "inputs": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tsconfig.json",
+        "../../tsconfig.json",
+        "../../packages/types/src/**/*.ts"
+      ]
     },
     "clean": {
       "cache": false

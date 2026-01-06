@@ -3,71 +3,32 @@ import { v4 as uuidv4 } from 'uuid';
 import { evaluate } from 'mathjs';
 import * as tf from '@tensorflow/tfjs-node';
 
+// @ts-ignore - workspace alias resolved via tsconfig paths at build time
 import { SMEAPIClient } from '@caas/sme-integration';
 import { validateEnv } from '@caas/config';
 
+// Re-export shared types from @caas/types for backward compatibility
+export type {
+  CreditAssessmentRequest,
+  CreditAssessmentResult,
+  FinancialData,
+  CreditHistoryItem,
+  RiskFactors,
+  RiskGrade,
+  Recommendation,
+} from '@caas/types';
+
+// Import types for internal use
+import type {
+  CreditAssessmentRequest,
+  CreditAssessmentResult,
+  FinancialData,
+  CreditHistoryItem,
+  RiskFactors,
+} from '@caas/types';
+
 const logger = pino({ name: 'underwriting-engine' });
 const env = validateEnv();
-
-export interface CreditAssessmentRequest {
-  userId: string;
-  applicationId: string;
-  requestedAmount: number;
-  currency: string;
-  purpose: string;
-  organizationId?: string;
-  additionalData?: Record<string, any>;
-}
-
-export interface CreditAssessmentResult {
-  assessmentId: string;
-  userId: string;
-  applicationId: string;
-  riskScore: number;
-  riskGrade: 'A' | 'B' | 'C' | 'D' | 'E';
-  probabilityOfDefault: number;
-  recommendation: 'approve' | 'approve_with_conditions' | 'reject' | 'refer_for_manual_review';
-  recommendedAmount?: number;
-  recommendedRate?: number;
-  recommendedTerm?: number;
-  conditions?: string[];
-  riskFactors: string[];
-  positiveFactors: string[];
-  confidenceLevel: number;
-  modelVersion: string;
-  processedAt: Date;
-  expiresAt: Date;
-}
-
-export interface FinancialData {
-  monthlyIncome: number;
-  monthlyExpenses: number;
-  existingDebt: number;
-  bankBalance: number;
-  cashFlow: number;
-  creditHistory?: CreditHistoryItem[];
-  businessRevenue?: number;
-  businessExpenses?: number;
-}
-
-export interface CreditHistoryItem {
-  type: 'loan' | 'credit_card' | 'mortgage' | 'utility';
-  amount: number;
-  status: 'current' | 'late' | 'defaulted' | 'closed';
-  monthsHistory: number;
-  paymentHistory: ('on_time' | 'late' | 'missed')[];
-}
-
-export interface RiskFactors {
-  debtToIncomeRatio: number;
-  creditUtilization: number;
-  paymentHistory: number;
-  lengthOfHistory: number;
-  accountTypes: number;
-  recentInquiries: number;
-  businessStability?: number;
-  industryRisk?: number;
-}
 
 export class UnderwritingEngine {
   private smeClient: SMEAPIClient;

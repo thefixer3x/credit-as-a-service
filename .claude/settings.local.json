@@ -30,7 +30,8 @@
       "mcp__hostinger-api__DNS_getRecordsV1",
       "mcp__hostinger-api__DNS_updateZoneRecordsV1",
       "Bash(curl:*)",
-      "Bash(ssh:*)"
+      "Bash(ssh:*)",
+      "WebSearch"
     ],
     "deny": []
   }

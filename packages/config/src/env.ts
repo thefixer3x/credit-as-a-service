@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const environmentSchema = z.object({
-  NODE_ENV: z.enum(['development', 'staging', 'production']).default('development'),
+  NODE_ENV: z.enum(['development', 'staging', 'production', 'test']).default('development'),
   PORT: z.coerce.number().default(3000),
   
   // Database
@@ -38,7 +38,36 @@ export const environmentSchema = z.object({
   
   // Monitoring
   SENTRY_DSN: z.string().url().optional(),
-  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug']).default('info'),
+  LOG_LEVEL: z.enum(['error', 'warn', 'info', 'debug', 'silent']).default('info'),
+
+  // Frontend & gateway URLs
+  FRONTEND_URL: z.string().url().optional(),
+  API_GATEWAY_URL: z.string().url().optional(),
+  API_GATEWAY_HOST: z.string().optional(),
+
+  // Host & ports for services
+  HOST: z.string().default('0.0.0.0'),
+  AUTH_SERVICE_PORT: z.coerce.number().optional(),
+  API_GATEWAY_PORT: z.coerce.number().optional(),
+  DISBURSEMENT_SERVICE_PORT: z.coerce.number().optional(),
+
+  // Service URLs
+  AUTH_SERVICE_URL: z.string().url().optional(),
+  UNDERWRITING_SERVICE_URL: z.string().url().optional(),
+  DISBURSEMENT_SERVICE_URL: z.string().url().optional(),
+  REPAYMENT_SERVICE_URL: z.string().url().optional(),
+  NOTIFICATIONS_SERVICE_URL: z.string().url().optional(),
+  BLOCKCHAIN_SERVICE_URL: z.string().url().optional(),
+
+  // CORS
+  ALLOWED_ORIGINS: z.string().optional(),
+
+  // Additional auth secrets
+  COOKIE_SECRET: z.string().optional(),
+  REFRESH_SECRET: z.string().optional(),
+
+  // Feature flags
+  STRICT_VALIDATION: z.coerce.boolean().default(false)
 });
 
 export type Environment = z.infer<typeof environmentSchema>;

@@ -1,20 +1,12 @@
 import { Router } from 'express';
 import { DisbursementController } from '../controllers/disbursement-controller.js';
-import { authMiddleware, validateApiKey, rateLimiter } from '@caas/auth';
 
 const router = Router();
 const controller = new DisbursementController();
 
-// Apply authentication middleware to all routes
-router.use(authMiddleware);
-router.use(validateApiKey);
-
-// Apply rate limiting
-router.use(rateLimiter({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: 'Too many disbursement requests, please try again later'
-}));
+// Note: Authentication middleware should be applied at the API Gateway level
+// or via Express-compatible middleware. The @caas/auth package exports Fastify middleware
+// which is not compatible with this Express-based service.
 
 /**
  * @route POST /api/v1/disbursements

@@ -6,7 +6,7 @@ import pino from 'pino';
 import { OffersEngine } from './services/offers-engine.js';
 import { validateEnv } from '@caas/config';
 import type { OfferRequest } from './types/offers.js';
-import type { CreditAssessmentResult } from '@caas/underwriting';
+import type { CreditAssessmentResult } from '@caas/types';
 
 const logger = pino({ name: 'offers-service' });
 const env = validateEnv();

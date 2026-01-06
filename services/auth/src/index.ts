@@ -38,9 +38,13 @@ async function buildServer() {
     },
   });
 
+  const allowedOrigins = [env.FRONTEND_URL, env.API_GATEWAY_URL].filter(
+    (url): url is string => Boolean(url)
+  );
+
   await fastify.register(cors, {
     origin: env.NODE_ENV === 'production' 
-      ? [env.FRONTEND_URL, env.API_GATEWAY_URL].filter(Boolean)
+      ? allowedOrigins
       : true,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -151,7 +155,7 @@ async function start() {
   try {
     const server = await buildServer();
     
-    const port = parseInt(env.AUTH_SERVICE_PORT || '8001', 10);
+    const port = env.AUTH_SERVICE_PORT ?? 8001;
     const host = env.HOST || '0.0.0.0';
     
     await server.listen({ port, host });
@@ -175,3 +179,20 @@ if (import.meta.url === `file://${process.argv[1]}`) {
 }
 
 export { buildServer };
+
+// Export middleware for use by other services
+export {
+  authenticateMiddleware,
+  authenticateMiddleware as authMiddleware,
+  authenticateApiKey,
+  authenticateApiKey as validateApiKey,
+  createRateLimiter,
+  createRateLimiter as rateLimiter,
+  requirePermissions,
+  requireRoles,
+  requireKYCStatus,
+  requireTenant
+} from './middleware/auth-middleware.js';
+
+// Export types
+export type { JWTPayload } from './types/auth.js';

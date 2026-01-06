@@ -336,7 +336,6 @@ export class ServiceRegistry {
         // Simple HTTP health check
         const response = await fetch(`${service.baseUrl}${service.healthCheckPath}`, {
           method: 'GET',
-          timeout: 5000,
           headers: {
             'User-Agent': 'CaaS-Gateway-HealthCheck/1.0'
           }

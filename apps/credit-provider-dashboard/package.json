@@ -4,6 +4,7 @@
   "description": "Credit provider dashboard and management interface",
   "scripts": {
     "dev": "next dev --port 3009",
+    "dev:mf": "vercel-microfrontends dev",
     "build": "next build",
     "start": "next start --port 3009",
     "lint": "next lint",
@@ -57,6 +58,7 @@
     "eslint-config-next": "^14.0.4",
     "postcss": "^8.4.32",
     "tailwindcss": "^3.3.6",
-    "typescript": "^5.3.2"
+    "typescript": "^5.3.2",
+    "@vercel/microfrontends": "*"
   }
 }

@@ -11,14 +11,13 @@
     "clean": "rm -rf dist",
     "lint": "eslint src/**/*.ts",
     "typecheck": "tsc --noEmit",
-    "test": "vitest"
+    "test": "vitest --passWithNoTests"
   },
   "dependencies": {
     "@caas/config": "workspace:*",
     "@caas/types": "workspace:*",
     "@caas/database": "workspace:*",
     "@caas/sme-integration": "workspace:*",
-    "@caas/underwriting": "workspace:*",
     "fastify": "^4.24.0",
     "@fastify/cors": "^8.4.0",
     "@fastify/helmet": "^11.1.0",

@@ -373,7 +373,7 @@ describe('AuthController', () => {
     it('should setup two-factor authentication for authenticated user', async () => {
       // Arrange
       const mockUser = createTestUser();
-      (mockRequest as any).user = mockUser;
+      (mockRequest as any).user = { sub: mockUser.id };
 
       mockAuthService.setupTwoFactor.mockResolvedValue({
         success: true,
@@ -398,7 +398,7 @@ describe('AuthController', () => {
     it('should handle two-factor setup errors', async () => {
       // Arrange
       const mockUser = createTestUser();
-      (mockRequest as any).user = mockUser;
+      (mockRequest as any).user = { sub: mockUser.id };
 
       mockAuthService.setupTwoFactor.mockResolvedValue({
         success: false,
@@ -559,7 +559,7 @@ describe('AuthController', () => {
       // Arrange
       mockRequest.ip = '192.168.1.100';
       mockRequest.headers = {
-        'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+        'user-agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) Mobile',
         'x-device-id': 'device-123',
         'x-device-name': 'iPhone 12',
       };
@@ -570,7 +570,7 @@ describe('AuthController', () => {
       // Assert
       expect(deviceInfo).toEqual({
         ipAddress: '192.168.1.100',
-        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X)',
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) Mobile',
         deviceId: 'device-123',
         deviceName: 'iPhone 12',
         deviceType: 'mobile',

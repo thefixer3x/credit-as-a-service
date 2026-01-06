@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+import Fastify, { type FastifyRequest, type FastifyReply } from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -109,7 +109,7 @@ async function buildGateway() {
     }
   });
 
-  await fastify.register(swagger, {
+  await fastify.register(swagger as any, {
     swagger: {
       info: {
         title: 'Credit-as-a-Service API Gateway',
@@ -154,7 +154,7 @@ async function buildGateway() {
   });
 
   // Request correlation and logging middleware
-  fastify.addHook('onRequest', async (request, reply) => {
+  fastify.addHook('onRequest', async (request: FastifyRequest, reply: FastifyReply) => {
     const correlationId = request.headers['x-correlation-id'] || request.id;
     request.headers['x-correlation-id'] = correlationId;
     
@@ -173,7 +173,7 @@ async function buildGateway() {
   });
 
   // Response logging middleware
-  fastify.addHook('onResponse', async (request, reply) => {
+  fastify.addHook('onResponse', async (request: FastifyRequest, reply: FastifyReply) => {
     const responseTime = Date.now() - ((request as any).startTime || 0);
     
     logger.info({
@@ -308,7 +308,7 @@ async function buildGateway() {
       }
 
       // Register the proxy
-      await fastify.register(proxy, {
+      await fastify.register(proxy as any, {
         upstream: service.baseUrl,
         prefix: route.path,
         rewritePrefix: route.target,
@@ -317,7 +317,7 @@ async function buildGateway() {
           connectTimeout: service.timeout || 30000,
           requestTimeout: service.timeout || 30000
         },
-        preHandler: async (request, reply) => {
+        preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
           // Add correlation ID to upstream request
           request.headers['x-correlation-id'] = request.headers['x-correlation-id'] || request.id;
           request.headers['x-gateway-source'] = 'caas-gateway';
@@ -325,7 +325,7 @@ async function buildGateway() {
           // Record service call start
           (request as any).serviceCallStart = Date.now();
         },
-        onResponse: async (request, reply, res) => {
+        onResponse: async (request: FastifyRequest, reply: FastifyReply, res: any) => {
           // Record service call metrics
           const responseTime = Date.now() - ((request as any).serviceCallStart || 0);
           const success = res.statusCode < 400;
@@ -341,7 +341,7 @@ async function buildGateway() {
             }, 'Service call failed');
           }
         },
-        onError: async (request, reply, error) => {
+        onError: async (request: FastifyRequest, reply: FastifyReply, error: any) => {
           logger.error({
             service: route.service,
             error: error.message,
@@ -483,7 +483,7 @@ async function start() {
   try {
     const gateway = await buildGateway();
     
-    const port = parseInt(env.API_GATEWAY_PORT || '8000', 10);
+    const port = env.API_GATEWAY_PORT ?? 8000;
     const host = env.HOST || '0.0.0.0';
     
     await gateway.listen({ port, host });

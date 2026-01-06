@@ -5,7 +5,7 @@ import { evaluate } from 'mathjs';
 
 import { SMEAPIClient } from '@caas/sme-integration';
 import { validateEnv } from '@caas/config';
-import type { CreditAssessmentResult } from '@caas/underwriting';
+import type { CreditAssessmentResult } from '@caas/types';
 
 import type {
   Provider,
@@ -27,8 +27,8 @@ const env = validateEnv();
 export class OffersEngine {
   private smeClient: SMEAPIClient;
   private providers: Map<string, Provider> = new Map();
-  private pricingModel: PricingModel;
-  private matchingCriteria: MatchingCriteria;
+  private pricingModel!: PricingModel;
+  private matchingCriteria!: MatchingCriteria;
 
   constructor() {
     this.smeClient = new SMEAPIClient();

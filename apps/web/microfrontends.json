@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "applications": {
+    "credit-as-a-service-platform": {
+      "packageName": "@caas/web",
+      "routing": "middleware"
+    },
+    "caas-admin-console": {
+      "packageName": "@caas/admin-console"
+    },
+    "caas-credit-provider-dashboard": {
+      "packageName": "@caas/credit-provider-dashboard"
+    }
+  },
+  "defaultApplication": "credit-as-a-service-platform"
+}

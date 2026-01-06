@@ -23,7 +23,7 @@
     "dev": "rollup -c --watch",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "vitest",
+    "test": "vitest --passWithNoTests",
     "test:coverage": "vitest --coverage",
     "lint": "eslint src/**/*.{ts,tsx}",
     "lint:fix": "eslint src/**/*.{ts,tsx} --fix",

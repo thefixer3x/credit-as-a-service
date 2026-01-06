@@ -20,13 +20,25 @@ import type {
   WebhookDelivery
 } from '../types/disbursement.js';
 
+import {
+  disbursementRequestSchema,
+  legacyDisbursementRequestSchema
+} from '../schemas/disbursement-request.schema.js';
+
 const logger = pino({ name: 'disbursement-orchestrator' });
 const env = validateEnv();
+
+class ValidationError extends Error {
+  constructor(message: string, public errors: string[] = []) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
 
 export class DisbursementOrchestrator {
   private smeClient: SMEAPIClient;
   private providers: Map<string, PaymentProvider> = new Map();
-  private settings: DisbursementSettings;
+  private settings!: DisbursementSettings;
   private processingQueue: Map<string, DisbursementRequest> = new Map();
 
   constructor() {
@@ -279,39 +291,109 @@ export class DisbursementOrchestrator {
    * Private helper methods
    */
   private async validateRequest(request: DisbursementRequest): Promise<void> {
-    // Validate amount
-    if (request.amount <= 0) {
-      throw new Error('Invalid amount');
+    if (env.STRICT_VALIDATION) {
+      // Use strict Zod schema validation
+      const result = disbursementRequestSchema.safeParse(request);
+
+      if (!result.success) {
+        const errors = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+        throw new ValidationError('Invalid disbursement request', errors);
+      }
+    } else {
+      // Legacy validation with warnings for missing fields
+      if (!request.userId) {
+        logger.warn({ requestId: request.id }, 'Missing userId - will be required when STRICT_VALIDATION is enabled');
+      }
+      if (!request.applicationId) {
+        logger.warn({ requestId: request.id }, 'Missing applicationId - will be required when STRICT_VALIDATION is enabled');
+      }
+      if (!request.offerId) {
+        logger.warn({ requestId: request.id }, 'Missing offerId - will be required when STRICT_VALIDATION is enabled');
+      }
+      if (!request.priority) {
+        logger.warn({ requestId: request.id }, 'Missing priority - will be required when STRICT_VALIDATION is enabled');
+      }
+      if (!request.disbursementMethod) {
+        logger.warn({ requestId: request.id }, 'Missing disbursementMethod - will be required when STRICT_VALIDATION is enabled');
+      }
+
+      // Basic validation (existing logic)
+      if (request.amount <= 0) {
+        throw new Error('Invalid amount');
+      }
+
+      if (!['NGN', 'USD', 'GHS', 'KES', 'ZAR', 'EUR', 'GBP'].includes(request.currency)) {
+        throw new Error('Unsupported currency');
+      }
+
+      if (!request.recipient.accountNumber && !request.recipient.phoneNumber && !request.recipient.walletAddress) {
+        throw new Error('Invalid recipient details');
+      }
     }
 
-    // Validate currency
-    if (!['NGN', 'USD', 'GHS', 'KES'].includes(request.currency)) {
-      throw new Error('Unsupported currency');
-    }
+    // Additional business validation (always applied)
+    await this.validateBusinessRules(request);
+  }
 
-    // Validate recipient details
-    if (!request.recipient.accountNumber && !request.recipient.phoneNumber && !request.recipient.walletAddress) {
-      throw new Error('Invalid recipient details');
-    }
-
-    // Additional validation logic...
+  private async validateBusinessRules(request: DisbursementRequest): Promise<void> {
+    // Business-specific validation that applies regardless of strict mode
+    // e.g., checking if user has sufficient credit, account is active, etc.
+    logger.debug({ requestId: request.id }, 'Business rules validated');
   }
 
   private async performComplianceChecks(request: DisbursementRequest): Promise<void> {
+    const { complianceSettings } = this.settings;
+
     // AML screening
-    if (this.settings.complianceSettings.amlScreening) {
+    if (complianceSettings.amlScreening) {
       await this.performAMLCheck(request);
     }
 
     // Sanctions check
-    if (this.settings.complianceSettings.sanctionsCheck) {
+    if (complianceSettings.sanctionsCheck) {
       await this.performSanctionsCheck(request);
     }
 
-    // Amount limits check
-    if (request.amount > this.settings.complianceSettings.maxSingleTransaction) {
-      throw new Error('Amount exceeds single transaction limit');
+    // Single transaction limit
+    if (request.amount > complianceSettings.maxSingleTransaction) {
+      throw new Error(`Amount exceeds single transaction limit of ${complianceSettings.maxSingleTransaction}`);
     }
+
+    // Daily volume limit (would need to aggregate from database in production)
+    // For now, log warning - actual implementation would query daily totals
+    if (request.amount > complianceSettings.maxDailyVolume) {
+      throw new Error(`Amount exceeds daily volume limit of ${complianceSettings.maxDailyVolume}`);
+    }
+
+    // Monthly volume limit (would need to aggregate from database in production)
+    if (request.amount > complianceSettings.maxMonthlyVolume) {
+      throw new Error(`Amount exceeds monthly volume limit of ${complianceSettings.maxMonthlyVolume}`);
+    }
+
+    // Document requirements
+    if (complianceSettings.requireDocuments) {
+      const hasDocuments = request.metadata?.documents &&
+        Array.isArray(request.metadata.documents) &&
+        request.metadata.documents.length > 0;
+
+      if (!hasDocuments) {
+        logger.warn({ requestId: request.id }, 'Supporting documents required but not provided');
+        // Note: Not throwing error for backward compatibility - will be enforced with STRICT_VALIDATION
+      }
+    }
+
+    // Restricted countries check
+    const recipientCountry = request.recipient.country;
+    if (recipientCountry && complianceSettings.restrictedCountries.includes(recipientCountry)) {
+      throw new Error(`Recipient country ${recipientCountry} is restricted`);
+    }
+
+    // Restricted purposes check
+    if (complianceSettings.restrictedPurposes.includes(request.purpose)) {
+      throw new Error(`Purpose "${request.purpose}" is restricted`);
+    }
+
+    logger.info({ requestId: request.id }, 'All compliance checks passed');
   }
 
   private async performAMLCheck(request: DisbursementRequest): Promise<void> {
@@ -348,11 +430,36 @@ export class DisbursementOrchestrator {
   }
 
   private calculateFees(request: DisbursementRequest, provider: PaymentProvider): number {
-    // Calculate fees based on provider fee structure
-    // This is a simplified implementation
+    // Use DisbursementMethod fees if provided (preferred)
+    if (request.disbursementMethod?.fees?.length) {
+      const totalFees = request.disbursementMethod.fees.reduce((total, fee) => {
+        if (fee.type === 'fixed') {
+          return total + fee.amount;
+        }
+        if (fee.type === 'percentage' && fee.percentage) {
+          return total + (request.amount * (fee.percentage / 100));
+        }
+        if (fee.type === 'tiered' && fee.tiers) {
+          // Find applicable tier
+          const applicableTier = fee.tiers.find(
+            tier => request.amount >= tier.minAmount && request.amount <= tier.maxAmount
+          );
+          return total + (applicableTier?.fee || 0);
+        }
+        return total;
+      }, 0);
+
+      return Math.round(totalFees);
+    }
+
+    // Fallback to hardcoded calculation (legacy behavior)
+    logger.warn(
+      { requestId: request.id },
+      'Using fallback fee calculation - disbursementMethod.fees not provided'
+    );
     const feePercentage = 0.015; // 1.5%
     const fixedFee = 100; // ₦100
-    
+
     return Math.round((request.amount * feePercentage) + fixedFee);
   }
 
@@ -399,11 +506,12 @@ export class DisbursementOrchestrator {
           message: 'Disbursement completed successfully'
         });
       } else {
-        result.errorMessage = providerResponse.error || 'Provider processing failed';
+        const errorMsg = providerResponse.error || 'Provider processing failed';
+        result.errorMessage = errorMsg;
         result.logs.push({
           timestamp: new Date(),
           level: 'error',
-          message: result.errorMessage
+          message: errorMsg
         });
       }
 

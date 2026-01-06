@@ -3,40 +3,82 @@ import pino from 'pino';
 import { z } from 'zod';
 
 import { DisbursementOrchestrator } from '../services/disbursement-orchestrator.js';
-import type { 
-  DisbursementRequest, 
+import type {
+  DisbursementRequest,
   BatchDisbursement,
-  DisbursementSettings 
+  DisbursementSettings,
+  DisbursementMethod,
+  Priority
 } from '../types/disbursement.js';
 
 const logger = pino({ name: 'disbursement-controller' });
 
-// Validation schemas
-const disbursementRequestSchema = z.object({
+// API Input schemas (what clients send - subset of full DisbursementRequest)
+const disbursementInputSchema = z.object({
   amount: z.number().positive(),
-  currency: z.enum(['NGN', 'USD', 'GHS', 'KES']),
+  currency: z.enum(['NGN', 'USD', 'GHS', 'KES', 'EUR', 'GBP', 'ZAR']),
   recipient: z.object({
-    type: z.enum(['bank_account', 'mobile_money', 'wallet']),
+    type: z.enum(['bank_account', 'mobile_wallet', 'mobile_money', 'card', 'crypto_wallet', 'wallet']),
     accountNumber: z.string().optional(),
     bankCode: z.string().optional(),
+    bankName: z.string().optional(),
     accountName: z.string().optional(),
     phoneNumber: z.string().optional(),
+    walletProvider: z.string().optional(),
     walletAddress: z.string().optional(),
-    network: z.string().optional()
+    blockchain: z.string().optional(),
+    network: z.string().optional(),
+    country: z.string().optional()
   }),
   purpose: z.string(),
   reference: z.string().optional(),
+  priority: z.enum(['low', 'normal', 'high', 'urgent']).optional(),
+  callbackUrl: z.string().url().optional(),
+  metadata: z.record(z.any()).optional(),
+  // Optional: client can provide these if available
+  applicationId: z.string().uuid().optional(),
+  offerId: z.string().uuid().optional()
+});
+
+const batchDisbursementInputSchema = z.object({
+  name: z.string(),
   description: z.string().optional(),
+  requests: z.array(disbursementInputSchema),
   callbackUrl: z.string().url().optional(),
   metadata: z.record(z.any()).optional()
 });
 
-const batchDisbursementSchema = z.object({
-  name: z.string(),
-  description: z.string().optional(),
-  requests: z.array(disbursementRequestSchema),
-  callbackUrl: z.string().url().optional(),
-  metadata: z.record(z.any()).optional()
+// Default disbursement method for API-created requests
+const getDefaultDisbursementMethod = (): DisbursementMethod => ({
+  provider: {
+    id: 'default-provider',
+    name: 'Default Provider',
+    type: 'fintech',
+    country: 'NG',
+    currencies: ['NGN', 'USD'],
+    isActive: true,
+    config: {
+      apiUrl: 'https://api.provider.com',
+      environment: 'sandbox',
+      maxRetries: 3,
+      timeoutMs: 30000
+    }
+  },
+  channel: 'instant',
+  fees: [{
+    type: 'percentage',
+    amount: 0,
+    percentage: 1.5,
+    description: 'Transaction fee'
+  }],
+  estimatedDuration: '5 minutes',
+  limits: {
+    minAmount: 100,
+    maxAmount: 10000000,
+    dailyLimit: 50000000,
+    monthlyLimit: 500000000,
+    perTransactionLimit: 10000000
+  }
 });
 
 export class DisbursementController {
@@ -52,19 +94,35 @@ export class DisbursementController {
   async createDisbursement(req: Request, res: Response): Promise<void> {
     try {
       // Validate request body
-      const validatedData = disbursementRequestSchema.parse(req.body);
-      
+      const validatedData = disbursementInputSchema.parse(req.body);
+
+      // Get user ID from authenticated request context
+      const userId = (req as any).user?.sub || (req as any).user?.id || 'system';
+
+      // Build full disbursement request with all required fields
       const disbursementRequest: DisbursementRequest = {
         id: `disb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        ...validatedData,
+        userId,
+        applicationId: validatedData.applicationId || `app_${Date.now()}`,
+        offerId: validatedData.offerId || `offer_${Date.now()}`,
+        amount: validatedData.amount,
+        currency: validatedData.currency,
+        recipient: validatedData.recipient,
+        disbursementMethod: getDefaultDisbursementMethod(),
+        purpose: validatedData.purpose,
+        reference: validatedData.reference || `ref_${Date.now()}`,
+        priority: validatedData.priority || 'normal',
+        callbackUrl: validatedData.callbackUrl,
+        metadata: validatedData.metadata,
         createdAt: new Date(),
         status: 'pending'
       };
 
-      logger.info({ 
+      logger.info({
         requestId: disbursementRequest.id,
+        userId: disbursementRequest.userId,
         amount: disbursementRequest.amount,
-        currency: disbursementRequest.currency 
+        currency: disbursementRequest.currency
       }, 'Creating disbursement request');
 
       const result = await this.orchestrator.processDisbursement(disbursementRequest);
@@ -76,7 +134,7 @@ export class DisbursementController {
 
     } catch (error) {
       logger.error({ error }, 'Failed to create disbursement');
-      
+
       if (error instanceof z.ZodError) {
         res.status(400).json({
           success: false,
@@ -99,18 +157,42 @@ export class DisbursementController {
   async createBatchDisbursement(req: Request, res: Response): Promise<void> {
     try {
       // Validate request body
-      const validatedData = batchDisbursementSchema.parse(req.body);
-      
+      const validatedData = batchDisbursementInputSchema.parse(req.body);
+
+      // Get user ID from authenticated request context
+      const userId = (req as any).user?.sub || (req as any).user?.id || 'system';
+
+      // Build full disbursement requests with all required fields
+      const requests: DisbursementRequest[] = validatedData.requests.map((input, index) => ({
+        id: `disb_${Date.now()}_${index}_${Math.random().toString(36).substr(2, 9)}`,
+        userId,
+        applicationId: input.applicationId || `app_${Date.now()}_${index}`,
+        offerId: input.offerId || `offer_${Date.now()}_${index}`,
+        amount: input.amount,
+        currency: input.currency,
+        recipient: input.recipient,
+        disbursementMethod: getDefaultDisbursementMethod(),
+        purpose: input.purpose,
+        reference: input.reference || `ref_${Date.now()}_${index}`,
+        priority: input.priority || 'normal',
+        callbackUrl: input.callbackUrl,
+        metadata: input.metadata,
+        createdAt: new Date(),
+        status: 'pending' as const
+      }));
+
       const batchRequest: BatchDisbursement = {
         id: `batch_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        ...validatedData,
+        name: validatedData.name,
+        description: validatedData.description,
+        requests,
         status: 'pending',
         createdAt: new Date()
       };
 
-      logger.info({ 
+      logger.info({
         batchId: batchRequest.id,
-        requestCount: batchRequest.requests.length 
+        requestCount: batchRequest.requests.length
       }, 'Creating batch disbursement');
 
       const result = await this.orchestrator.processBatchDisbursement(batchRequest);
@@ -122,7 +204,7 @@ export class DisbursementController {
 
     } catch (error) {
       logger.error({ error }, 'Failed to create batch disbursement');
-      
+
       if (error instanceof z.ZodError) {
         res.status(400).json({
           success: false,

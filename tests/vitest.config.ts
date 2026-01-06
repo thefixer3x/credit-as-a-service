@@ -48,7 +48,15 @@ export default defineConfig({
       '@utils': resolve(__dirname, './utils'),
       '@services': resolve(__dirname, '../services'),
       '@apps': resolve(__dirname, '../apps'),
-      '@libs': resolve(__dirname, '../libs')
+      '@libs': resolve(__dirname, '../libs'),
+      '@caas/common': resolve(__dirname, '../packages/common/src'),
+      '@caas/config': resolve(__dirname, '../packages/config/src'),
+      '@caas/types': resolve(__dirname, '../packages/types/src'),
+      '@caas/shared': resolve(__dirname, '../packages/shared/src'),
+      '@caas/cache': resolve(__dirname, '../libs/cache/src'),
+      '@caas/database': resolve(__dirname, '../services/database/src'),
+      '@caas/sme-integration': resolve(__dirname, '../services/sme-integration/src'),
+      '@caas/auth': resolve(__dirname, '../services/auth/src')
     }
   }
 });

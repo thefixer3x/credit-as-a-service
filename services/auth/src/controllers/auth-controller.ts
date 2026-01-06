@@ -1,3 +1,4 @@
+/// <reference path="../types/fastify.d.ts" />
 import type { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
 import pino from 'pino';
 

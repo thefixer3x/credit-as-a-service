@@ -27,7 +27,11 @@
       "@caas/common": ["./packages/common/src"],
       "@caas/sdk": ["./packages/sdk/src"],
       "@caas/config": ["./packages/config/src"],
-      "@caas/types": ["./packages/types/src"]
+      "@caas/types": ["./packages/types/src"],
+      "@caas/sme-integration": ["./services/sme-integration/src"],
+      "@caas/sme-integration/*": ["./services/sme-integration/src/*"],
+      "@caas/auth": ["./services/auth/src"],
+      "@caas/auth/*": ["./services/auth/src/*"]
     },
     "types": ["bun-types", "minimatch"]
   },

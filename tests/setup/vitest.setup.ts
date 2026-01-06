@@ -1,7 +1,29 @@
 import { beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
 import { server } from '../mocks/server';
-import { resetDatabase, initializeTestDatabase } from '../utils/database';
-import { clearRedisCache } from '../utils/redis';
+import { closeTestDatabase, resetDatabase, initializeTestDatabase } from '../utils/database';
+import { clearRedisCache, closeTestRedis } from '../utils/redis';
+
+const setEnvDefault = (key: string, value: string) => {
+  if (!process.env[key]) {
+    process.env[key] = value;
+  }
+};
+
+const isUnitRun =
+  process.env.TEST_SUITE === 'unit' || process.argv.some((arg) => arg.includes('unit'));
+const shouldInitDb = !isUnitRun && process.env.TEST_SKIP_DB !== 'true';
+
+// Ensure required env vars exist before any service imports run.
+setEnvDefault('NODE_ENV', 'test');
+setEnvDefault('JWT_SECRET', 'test-jwt-secret-key-for-testing-only-123456');
+setEnvDefault('DATABASE_URL', 'postgresql://test:test@localhost:5433/caas_test');
+setEnvDefault('REDIS_URL', 'redis://localhost:6380');
+setEnvDefault('REDIS_HOST', 'localhost');
+setEnvDefault('REDIS_PORT', '6380');
+setEnvDefault('SME_API_BASE_URL', 'http://localhost:9001');
+setEnvDefault('SME_API_KEY', 'test-sme-api-key');
+setEnvDefault('SME_WEBHOOK_SECRET', 'test-sme-webhook-secret');
+setEnvDefault('LOG_LEVEL', 'silent');
 
 // Global test setup
 beforeAll(async () => {
@@ -9,14 +31,9 @@ beforeAll(async () => {
   server.listen({ onUnhandledRequest: 'error' });
   
   // Initialize test database
-  await initializeTestDatabase();
-  
-  // Set test environment variables
-  process.env.NODE_ENV = 'test';
-  process.env.JWT_SECRET = 'test-jwt-secret-key-for-testing-only';
-  process.env.DATABASE_URL = 'postgresql://test:test@localhost:5433/caas_test';
-  process.env.REDIS_URL = 'redis://localhost:6380';
-  process.env.LOG_LEVEL = 'silent';
+  if (shouldInitDb) {
+    await initializeTestDatabase();
+  }
 });
 
 // Reset between tests
@@ -25,7 +42,9 @@ beforeEach(async () => {
   server.resetHandlers();
   
   // Reset database state
-  await resetDatabase();
+  if (shouldInitDb) {
+    await resetDatabase();
+  }
   
   // Clear Redis cache
   await clearRedisCache();
@@ -46,10 +65,12 @@ afterAll(async () => {
   server.close();
   
   // Close database connections
-  await global.testDbConnection?.close();
+  if (shouldInitDb) {
+    await closeTestDatabase();
+  }
   
   // Close Redis connection
-  await global.testRedisClient?.quit();
+  await closeTestRedis();
 });
 
 // Global test utilities

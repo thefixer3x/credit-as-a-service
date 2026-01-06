@@ -19,6 +19,7 @@ import type {
   JWTPayload
 } from '../types/auth.js';
 
+// @ts-ignore - workspace alias resolved via tsconfig paths at build time
 import { SMEAPIClient } from '@caas/sme-integration';
 import { validateEnv } from '@caas/config';
 

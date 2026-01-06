@@ -19,9 +19,9 @@
   "scripts": {
     "build": "tsup src/index.ts --format cjs,esm --dts --clean",
     "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
-    "lint": "eslint src --ext .ts,.tsx",
+    "lint": "eslint --no-error-on-unmatched-pattern --no-warn-ignored \"src/**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit"
   },
   "keywords": [

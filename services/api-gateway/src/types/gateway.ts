@@ -1,5 +1,15 @@
 import { z } from 'zod';
 
+/**
+ * API Gateway Types
+ *
+ * Gateway-specific infrastructure types for routing, rate limiting, circuit breaking, etc.
+ * For domain-specific types (payments, credit, users), import from @caas/types:
+ *
+ * @example
+ * import type { DisbursementRequest, CreditAssessmentResult } from '@caas/types';
+ */
+
 // Service registry types
 export interface ServiceConfig {
   name: string;

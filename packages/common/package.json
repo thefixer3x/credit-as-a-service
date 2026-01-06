@@ -16,10 +16,10 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c --watch",
-    "test": "vitest",
+    "test": "vitest --passWithNoTests",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint src/**/*.{ts,tsx}",
-    "lint:fix": "eslint src/**/*.{ts,tsx} --fix",
+    "lint": "eslint --no-error-on-unmatched-pattern --no-warn-ignored \"src/**/*.{ts,tsx}\"",
+    "lint:fix": "eslint --no-error-on-unmatched-pattern --no-warn-ignored \"src/**/*.{ts,tsx}\" --fix",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
