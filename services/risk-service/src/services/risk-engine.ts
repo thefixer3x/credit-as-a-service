@@ -52,6 +52,14 @@ export type RiskAssessmentResult = z.infer<typeof RiskAssessmentResultSchema>;
 
 export class RiskEngine {
   private logger: pino.Logger;
+  private assessments = new Map<string, RiskAssessmentResult>();
+  private userAssessments = new Map<string, string[]>();
+  private modelConfig = {
+    minimumApprovalScore: 300,
+    expiresInMs: 24 * 60 * 60 * 1000,
+    version: '1.0.0',
+    updatedAt: new Date(),
+  };
 
   constructor(logger: pino.Logger) {
     this.logger = logger;
@@ -71,7 +79,7 @@ export class RiskEngine {
       const riskLevel = this.determineRiskLevel(riskScore);
       
       // Check if approved
-      const approved = riskScore >= 300; // Minimum score for approval
+      const approved = riskScore >= this.modelConfig.minimumApprovalScore;
       
       // Calculate approved amount and interest rate
       const maxApprovedAmount = this.calculateMaxApprovedAmount(validatedApp, riskScore);
@@ -93,8 +101,12 @@ export class RiskEngine {
         reasons,
         recommendations,
         createdAt: new Date(),
-        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        expiresAt: new Date(Date.now() + this.modelConfig.expiresInMs),
       };
+
+      this.assessments.set(result.assessmentId, result);
+      const existingUserAssessments = this.userAssessments.get(result.userId) ?? [];
+      this.userAssessments.set(result.userId, [result.assessmentId, ...existingUserAssessments].slice(0, 20));
 
       this.logger.info(
         { 
@@ -112,6 +124,78 @@ export class RiskEngine {
       this.logger.error({ error, userId: application.userId }, 'Risk assessment failed');
       throw new Error('Risk assessment failed');
     }
+  }
+
+  getAssessment(assessmentId: string): RiskAssessmentResult | null {
+    return this.assessments.get(assessmentId) ?? null;
+  }
+
+  getRiskFactors(userId: string): {
+    userId: string;
+    latestAssessment?: RiskAssessmentResult;
+    factors: Array<{ factor: string; impact: 'positive' | 'negative' | 'neutral'; detail: string }>;
+    recommendations: string[];
+  } {
+    const assessmentIds = this.userAssessments.get(userId) ?? [];
+    const latestAssessment = assessmentIds.length > 0
+      ? this.assessments.get(assessmentIds[0])
+      : undefined;
+
+    if (!latestAssessment) {
+      return {
+        userId,
+        factors: [
+          {
+            factor: 'assessment_history',
+            impact: 'neutral',
+            detail: 'No risk assessment has been captured for this user in the current service window.',
+          },
+        ],
+        recommendations: ['Run a credit risk assessment before requesting user-specific factor analysis.'],
+      };
+    }
+
+    return {
+      userId,
+      latestAssessment,
+      factors: latestAssessment.reasons.map(reason => ({
+        factor: this.slugify(reason),
+        impact: this.isPositiveReason(reason) ? 'positive' : 'negative',
+        detail: reason,
+      })),
+      recommendations: latestAssessment.recommendations,
+    };
+  }
+
+  updateModel(config: Partial<{
+    minimumApprovalScore: number;
+    expiresInMs: number;
+    version: string;
+  }>): typeof this.modelConfig {
+    if (config.minimumApprovalScore !== undefined) {
+      if (config.minimumApprovalScore < 0 || config.minimumApprovalScore > 1000) {
+        throw new Error('minimumApprovalScore must be between 0 and 1000');
+      }
+
+      this.modelConfig.minimumApprovalScore = config.minimumApprovalScore;
+    }
+
+    if (config.expiresInMs !== undefined) {
+      if (config.expiresInMs <= 0) {
+        throw new Error('expiresInMs must be greater than zero');
+      }
+
+      this.modelConfig.expiresInMs = config.expiresInMs;
+    }
+
+    if (config.version) {
+      this.modelConfig.version = config.version;
+    }
+
+    this.modelConfig.updatedAt = new Date();
+    this.logger.info({ modelConfig: this.modelConfig }, 'Risk model configuration updated');
+
+    return this.modelConfig;
   }
 
   private async calculateRiskScore(application: CreditApplication): Promise<number> {
@@ -361,5 +445,19 @@ export class RiskEngine {
     }
 
     return recommendations;
+  }
+
+  private slugify(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  }
+
+  private isPositiveReason(reason: string): boolean {
+    return [
+      'excellent',
+      'high monthly income',
+      'stable',
+      'low debt',
+      'low risk',
+    ].some(term => reason.toLowerCase().includes(term));
   }
 }

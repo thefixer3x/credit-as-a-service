@@ -1,6 +1,10 @@
 import { HttpClient } from './core/http-client.js';
 import { UserService } from './services/user.service.js';
 import { CreditService } from './services/credit.service.js';
+import { AuthService } from './services/auth.service.js';
+import { LoanService } from './services/loan.service.js';
+import { PaymentService } from './services/payment.service.js';
+import { AdminService } from './services/admin.service.js';
 import { 
   SdkConfig, 
   SdkConfigSchema, 
@@ -44,6 +48,10 @@ export class CaasSDK extends EventEmitter<SdkEvents> {
   
   public readonly users: UserService;
   public readonly credit: CreditService;
+  public readonly auth: AuthService;
+  public readonly loans: LoanService;
+  public readonly payments: PaymentService;
+  public readonly admin: AdminService;
 
   constructor(config: SdkConfig) {
     super();
@@ -59,11 +67,16 @@ export class CaasSDK extends EventEmitter<SdkEvents> {
     this.httpClient.on('request:success', (data) => this.emit('request:success', data));
     this.httpClient.on('request:error', (data) => this.emit('request:error', data));
     this.httpClient.on('auth:expired', (data) => this.emit('auth:expired', data));
+    this.httpClient.on('auth:refreshed', (data) => this.emit('auth:refreshed', data));
     this.httpClient.on('rate:limit', (data) => this.emit('rate:limit', data));
     
     // Initialize services
+    this.auth = new AuthService(this.httpClient);
     this.users = new UserService(this.httpClient);
     this.credit = new CreditService(this.httpClient);
+    this.loans = new LoanService(this.httpClient);
+    this.payments = new PaymentService(this.httpClient);
+    this.admin = new AdminService(this.httpClient);
   }
 
   /**
@@ -105,7 +118,9 @@ export class CaasSDK extends EventEmitter<SdkEvents> {
       timeout: 10000, // 10 seconds
       retryAttempts: 3,
       retryDelay: 1000, // 1 second
-      rateLimitPerHour: 1000
+      rateLimitPerHour: 1000,
+      autoRefreshToken: true,
+      refreshEndpoint: '/auth/refresh'
     });
   }
 }
@@ -115,6 +130,11 @@ export * from './types/index.js';
 export * from './core/http-client.js';
 export * from './services/user.service.js';
 export * from './services/credit.service.js';
+export * from './services/auth.service.js';
+export * from './services/loan.service.js';
+export * from './services/payment.service.js';
+export * from './services/admin.service.js';
+export * from './webhooks.js';
 
 // Export errors
 export {

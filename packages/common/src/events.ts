@@ -286,6 +286,15 @@ export class EventPublisher {
     });
     return publishEvent(event, this.serviceUrl);
   }
+
+  async publishEvent(event: any): Promise<void> {
+    return publishEvent({
+      ...event,
+      source: event.source || process.env.SERVICE_NAME || 'unknown-service',
+      timestamp: event.timestamp || Date.now(),
+      version: event.version || '1.0.0',
+    }, this.serviceUrl);
+  }
 }
 
 // Default instance

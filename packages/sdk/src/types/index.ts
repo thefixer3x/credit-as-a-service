@@ -28,6 +28,9 @@ export type ApiResponse<T = any> = {
 // SDK Configuration
 export const SdkConfigSchema = z.object({
   apiKey: z.string(),
+  refreshToken: z.string().optional(),
+  autoRefreshToken: z.boolean().default(true),
+  refreshEndpoint: z.string().default('/auth/refresh'),
   baseUrl: z.string().url().optional(),
   environment: z.enum(['development', 'staging', 'production']).default('production'),
   timeout: z.number().min(1000).max(60000).default(30000),
@@ -226,5 +229,6 @@ export interface SdkEvents {
   'request:success': { method: string; url: string; data: any; duration: number };
   'request:error': { method: string; url: string; error: CaasError; duration: number };
   'auth:expired': { timestamp: string };
+  'auth:refreshed': { timestamp: string };
   'rate:limit': { resetTime: number };
 }

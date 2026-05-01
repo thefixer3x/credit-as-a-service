@@ -348,7 +348,12 @@ export class CreditProviderService {
         providerId,
         pluginName: pluginConfig.pluginName!,
         version: pluginConfig.version || '1.0.0',
-        configuration: pluginConfig.configuration || {},
+        configuration: pluginConfig.configuration || {
+          endpoints: {},
+          authentication: {},
+          mappings: {},
+          transformations: [],
+        },
         isActive: pluginConfig.isActive !== false,
         lastSync: new Date(),
         syncFrequency: pluginConfig.syncFrequency || 'real_time',
@@ -560,10 +565,13 @@ export class CreditProviderService {
     try {
       if (plugin.configuration.endpoints?.baseUrl) {
         // Test basic connectivity to plugin endpoint
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 5000);
         const response = await fetch(plugin.configuration.endpoints.baseUrl, {
           method: 'HEAD',
-          timeout: 5000,
+          signal: controller.signal,
         });
+        clearTimeout(timeout);
         
         if (!response.ok) {
           this.logger.warn('Plugin connectivity test failed', {

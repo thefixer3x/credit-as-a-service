@@ -279,6 +279,7 @@ export interface ProviderAnalytics {
     uptimePercentage: number;
     errorRate: number;
     webhookDeliveryRate: number;
+    customerSatisfactionScore: number;
   };
   financialMetrics: {
     totalRevenue: number;

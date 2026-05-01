@@ -465,7 +465,7 @@ export class LeadDistributionService {
 
   private async sendLeadToProviders(
     leadData: LeadData,
-    providers: CreditProvider[],
+    providers: Array<CreditProvider & { matchingScore?: number }>,
     distributionId: string
   ): Promise<Array<{ providerId: string; success: boolean; error?: string }>> {
     const results = [];

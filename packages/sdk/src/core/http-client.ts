@@ -21,17 +21,22 @@ export class HttpClient extends EventEmitter<SdkEvents> {
   private requestCount: number = 0;
   private lastResetTime: number = Date.now();
   private config: SdkConfig;
+  private accessToken: string;
+  private refreshToken?: string;
+  private refreshPromise?: Promise<void>;
 
   constructor(config: SdkConfig) {
     super();
     this.config = config;
+    this.accessToken = config.apiKey;
+    this.refreshToken = config.refreshToken;
     
     this.client = axios.create({
       baseURL: config.baseUrl || this.getDefaultBaseUrl(config.environment),
       timeout: config.timeout,
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${config.apiKey}`,
+        'Authorization': `Bearer ${this.accessToken}`,
         'X-SDK-Version': '1.0.0',
         'X-SDK-Environment': config.environment,
       },
@@ -184,11 +189,64 @@ export class HttpClient extends EventEmitter<SdkEvents> {
       const response: AxiosResponse<ApiResponse<T>> = await this.client.request(config);
       return response.data;
     } catch (error) {
+      if (await this.shouldRefreshToken(error as CaasError, config)) {
+        await this.refreshAccessToken();
+        (config as any).authRefreshed = true;
+        return this.request<T>(config);
+      }
+
       if (this.shouldRetry(error as CaasError, config)) {
         return this.retryRequest<T>(config);
       }
       throw error;
     }
+  }
+
+  private async shouldRefreshToken(error: CaasError, config: AxiosRequestConfig): Promise<boolean> {
+    return Boolean(
+      this.config.autoRefreshToken &&
+      this.refreshToken &&
+      error.statusCode === 401 &&
+      !(config as any).authRefreshed
+    );
+  }
+
+  private async refreshAccessToken(): Promise<void> {
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
+    this.refreshPromise = (async () => {
+      try {
+        const response = await this.client.post(this.config.refreshEndpoint, {
+          refreshToken: this.refreshToken,
+        }, {
+          headers: {
+            Authorization: undefined,
+          },
+        });
+
+        const data = response.data?.data ?? response.data;
+        const accessToken = data?.accessToken || data?.token;
+        const refreshToken = data?.refreshToken;
+
+        if (!accessToken) {
+          throw new CaasAuthError('Refresh endpoint did not return an access token');
+        }
+
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken ?? this.refreshToken;
+        this.updateConfig({
+          apiKey: accessToken,
+          refreshToken: this.refreshToken,
+        });
+        this.emit('auth:refreshed', { timestamp: new Date().toISOString() });
+      } finally {
+        this.refreshPromise = undefined;
+      }
+    })();
+
+    return this.refreshPromise;
   }
 
   private shouldRetry(error: CaasError, config: AxiosRequestConfig): boolean {
@@ -257,7 +315,12 @@ export class HttpClient extends EventEmitter<SdkEvents> {
     this.config = { ...this.config, ...newConfig };
     
     if (newConfig.apiKey) {
+      this.accessToken = newConfig.apiKey;
       this.client.defaults.headers['Authorization'] = `Bearer ${newConfig.apiKey}`;
+    }
+
+    if (newConfig.refreshToken !== undefined) {
+      this.refreshToken = newConfig.refreshToken;
     }
     
     if (newConfig.timeout) {

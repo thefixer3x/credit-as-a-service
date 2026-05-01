@@ -47,6 +47,14 @@ export interface NotificationEvent {
 export class NotificationService extends EventEmitter {
   private templates: Map<string, NotificationTemplate> = new Map();
   private scheduledNotifications: Map<string, NodeJS.Timeout> = new Map();
+  private persistedOutbox: NotificationPayload[] = [];
+  private deliveryOutbox: Array<{
+    channel: 'email' | 'sms';
+    notification: NotificationPayload;
+    status: 'queued' | 'sent' | 'failed';
+    error?: string;
+    attemptedAt: Date;
+  }> = [];
 
   constructor(
     private wsManager: WebSocketManager,
@@ -287,28 +295,26 @@ export class NotificationService extends EventEmitter {
     return notification.id;
   }
 
-  // Integration methods (to be implemented with actual services)
   private async persistNotification(notification: NotificationPayload): Promise<void> {
-    // TODO: Implement database persistence
-    this.logger.debug(`Persisting notification to database`, {
-      notificationId: notification.id,
-    });
+    this.persistedOutbox.push(notification);
+
+    const persistenceUrl = process.env.NOTIFICATION_PERSISTENCE_URL;
+    if (!persistenceUrl) {
+      this.logger.debug(`Notification persisted to local outbox`, {
+        notificationId: notification.id,
+      });
+      return;
+    }
+
+    await this.postIntegration(persistenceUrl, notification, 'persistence');
   }
 
   private async sendEmailNotification(notification: NotificationPayload): Promise<void> {
-    // TODO: Implement email service integration
-    this.logger.debug(`Sending email notification`, {
-      notificationId: notification.id,
-      userId: notification.userId,
-    });
+    await this.dispatchChannelNotification('email', notification);
   }
 
   private async sendSMSNotification(notification: NotificationPayload): Promise<void> {
-    // TODO: Implement SMS service integration
-    this.logger.debug(`Sending SMS notification`, {
-      notificationId: notification.id,
-      userId: notification.userId,
-    });
+    await this.dispatchChannelNotification('sms', notification);
   }
 
   private shouldSendEmail(eventType: string): boolean {
@@ -359,7 +365,69 @@ export class NotificationService extends EventEmitter {
       ...this.wsManager.getStats(),
       scheduledNotifications: this.scheduledNotifications.size,
       availableTemplates: this.templates.size,
+      persistedNotifications: this.persistedOutbox.length,
+      queuedDeliveries: this.deliveryOutbox.filter(item => item.status === 'queued').length,
+      failedDeliveries: this.deliveryOutbox.filter(item => item.status === 'failed').length,
     };
+  }
+
+  private async dispatchChannelNotification(
+    channel: 'email' | 'sms',
+    notification: NotificationPayload
+  ): Promise<void> {
+    const endpoint = channel === 'email'
+      ? process.env.EMAIL_PROVIDER_URL
+      : process.env.SMS_PROVIDER_URL;
+
+    const record: {
+      channel: 'email' | 'sms';
+      notification: NotificationPayload;
+      status: 'queued' | 'sent' | 'failed';
+      error?: string;
+      attemptedAt: Date;
+    } = {
+      channel,
+      notification,
+      status: 'queued',
+      attemptedAt: new Date(),
+    };
+    this.deliveryOutbox.push(record);
+
+    if (!endpoint) {
+      this.logger.warn(`${channel.toUpperCase()} provider URL not configured; delivery queued`, {
+        notificationId: notification.id,
+        userId: notification.userId,
+      });
+      return;
+    }
+
+    try {
+      await this.postIntegration(endpoint, {
+        to: notification.userId,
+        subject: notification.title,
+        message: notification.message,
+        data: notification.data,
+        notificationId: notification.id,
+      }, channel);
+
+      record.status = 'sent';
+    } catch (error) {
+      record.status = 'failed';
+      record.error = error instanceof Error ? error.message : 'Unknown delivery error';
+      throw error;
+    }
+  }
+
+  private async postIntegration(url: string, payload: unknown, integration: string): Promise<void> {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      throw new Error(`${integration} integration returned HTTP ${response.status}`);
+    }
   }
 
   // Cleanup

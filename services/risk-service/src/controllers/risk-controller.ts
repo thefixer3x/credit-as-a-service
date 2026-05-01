@@ -53,14 +53,17 @@ export class RiskController {
       
       this.logger.info({ assessmentId }, 'Retrieving risk assessment');
 
-      // TODO: Implement database lookup for assessment results
-      // For now, return a placeholder response
+      const assessment = this.riskEngine.getAssessment(assessmentId);
+      if (!assessment) {
+        return reply.code(404).send({
+          success: false,
+          error: 'Risk assessment not found',
+        });
+      }
+
       return reply.code(200).send({
         success: true,
-        data: {
-          assessmentId,
-          message: 'Assessment retrieval not yet implemented',
-        },
+        data: assessment,
       });
 
     } catch (error) {
@@ -79,21 +82,11 @@ export class RiskController {
       
       this.logger.info({ userId }, 'Retrieving risk factors');
 
-      // TODO: Implement risk factors analysis
-      // For now, return a placeholder response
+      const riskFactors = this.riskEngine.getRiskFactors(userId);
+
       return reply.code(200).send({
         success: true,
-        data: {
-          userId,
-          riskFactors: [
-            'Credit history length',
-            'Payment history',
-            'Debt-to-income ratio',
-            'Employment stability',
-            'Income level',
-          ],
-          message: 'Risk factors analysis not yet implemented',
-        },
+        data: riskFactors,
       });
 
     } catch (error) {
@@ -110,17 +103,28 @@ export class RiskController {
     try {
       this.logger.info('Updating risk model');
 
-      // TODO: Implement risk model update functionality
-      // For now, return a placeholder response
+      const config = z.object({
+        minimumApprovalScore: z.number().min(0).max(1000).optional(),
+        expiresInMs: z.number().positive().optional(),
+        version: z.string().min(1).optional(),
+      }).parse(request.body ?? {});
+      const modelConfig = this.riskEngine.updateModel(config);
+
       return reply.code(200).send({
         success: true,
-        data: {
-          message: 'Risk model update not yet implemented',
-        },
+        data: modelConfig,
       });
 
     } catch (error) {
       this.logger.error({ error }, 'Failed to update risk model');
+
+      if (error instanceof z.ZodError) {
+        return reply.code(400).send({
+          success: false,
+          error: 'Invalid model configuration',
+          details: error.errors,
+        });
+      }
       
       return reply.code(500).send({
         success: false,
